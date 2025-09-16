@@ -2,20 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 
-// Interface for the task data returned by get_stage_tasks_ordered RPC
-interface TaskWithDetails {
-  id: string
-  title: string
-  description: string | null
-  status: string
-  priority: string
-  assigned_to: string | null
-  estimated_hours: number | null
-  position: number
-  stage_id: string
-  created_at: string
-}
-
 // PUT /api/projects/[id]/tasks/[taskId]/reorder - Reorder a specific task
 export async function PUT(
   request: NextRequest,
@@ -133,8 +119,8 @@ export async function PUT(
       )
     }
 
-    // Type the updated tasks properly
-    const tasks: TaskWithDetails[] = Array.isArray(updatedTasks) ? updatedTasks as TaskWithDetails[] : []
+    // Return the updated tasks
+    const tasks = Array.isArray(updatedTasks) ? updatedTasks : []
 
     return NextResponse.json({
       message: 'Tarefa reordenada com sucesso',

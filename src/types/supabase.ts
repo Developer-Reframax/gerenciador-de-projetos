@@ -199,7 +199,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_gantt_projects: {
+        Args: {
+          p_status?: string[] | null
+          p_priority?: string[] | null
+          p_team_id?: string | null
+          p_start_date?: string | null
+          p_end_date?: string | null
+        }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          status: string
+          priority: string
+          start_date: string
+          due_date: string
+          progress_percentage: number
+          owner_name: string
+          team_name: string
+          total_tasks: number
+          completed_tasks: number
+        }[]
+      }
     }
     Enums: {
       comment_context: "task" | "project" | "team"

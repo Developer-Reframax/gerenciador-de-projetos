@@ -163,14 +163,7 @@ export default function ProjectDetailsPage() {
                   </span>
                 </div>
                 
-                {project.requester && (
-                  <div>
-                    <span className="text-sm text-gray-500">Solicitante:</span>
-                    <span className="ml-2 text-sm">
-                      {project.requester.full_name || project.requester.email}
-                    </span>
-                  </div>
-                )}
+
 
                 {project.team && (
                   <div>

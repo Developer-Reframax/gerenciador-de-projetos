@@ -65,7 +65,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
       status: project?.status || 'planning',
       priority: project?.priority || 'medium',
       team_id: project?.team_id || '',
-      requester_id: project?.requester_id || '',
+      requester_id: project?.owner_id || '',
       start_date: project?.start_date ? project.start_date.split('T')[0] : '',
       due_date: project?.due_date ? project.due_date.split('T')[0] : '',
       budget: project?.budget || undefined
