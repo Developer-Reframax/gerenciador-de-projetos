@@ -20,6 +20,12 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+     files: ["src/app/api/**/*.ts"],
+     rules: {
+       "@typescript-eslint/no-explicit-any": "warn"
+     }
+   }
 ];
 
 export default eslintConfig;

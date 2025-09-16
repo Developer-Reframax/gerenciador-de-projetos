@@ -1,0 +1,90 @@
+/* Cursor pointer para elementos clicáveis */
+
+/* Botões */
+button,
+.btn,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer !important;
+}
+
+/* Links */
+a,
+[role="link"] {
+  cursor: pointer !important;
+}
+
+/* Elementos com eventos de click */
+[onclick],
+[data-testid*="button"],
+[data-testid*="click"],
+.clickable,
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+/* Componentes específicos do shadcn/ui */
+.ui-button,
+.ui-select-trigger,
+.ui-dropdown-menu-trigger,
+.ui-popover-trigger,
+.ui-dialog-trigger,
+.ui-sheet-trigger,
+.ui-tooltip-trigger,
+.ui-accordion-trigger,
+.ui-tabs-trigger,
+.ui-menubar-trigger,
+.ui-navigation-menu-trigger,
+.ui-context-menu-trigger {
+  cursor: pointer !important;
+}
+
+/* Elementos de formulário interativos */
+select,
+.select-trigger,
+.dropdown-trigger,
+.combobox-trigger {
+  cursor: pointer !important;
+}
+
+/* Cards e itens de lista clicáveis */
+.card[onclick],
+.list-item[onclick],
+.table-row[onclick],
+.menu-item,
+.nav-item {
+  cursor: pointer !important;
+}
+
+/* Ícones clicáveis */
+.icon[onclick],
+.icon-button,
+svg[onclick],
+.lucide[onclick] {
+  cursor: pointer !important;
+}
+
+/* Estados hover para elementos clicáveis */
+.hover\:bg-accent:hover,
+.hover\:bg-muted:hover,
+.hover\:bg-secondary:hover,
+.hover\:opacity-80:hover {
+  cursor: pointer !important;
+}
+
+/* Elementos disabled devem manter cursor padrão */
+button:disabled,
+.btn:disabled,
+[disabled],
+.disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+}
+
+/* Loading states */
+.loading,
+[data-loading="true"] {
+  cursor: wait !important;
+}
