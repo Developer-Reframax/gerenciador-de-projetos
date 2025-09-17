@@ -222,6 +222,17 @@ export type Database = {
           completed_tasks: number
         }[]
       }
+      get_kanban_project_status_data: {
+        Args: {
+          p_team_id: string
+          p_priority_filter?: string[] | null
+        }
+        Returns: {
+          status: string
+          status_label: string
+          projects: Json
+        }[]
+      }
     }
     Enums: {
       comment_context: "task" | "project" | "team"

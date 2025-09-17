@@ -47,16 +47,15 @@ const getFileIcon = (mimeType: string | null | undefined) => {
 
 interface Attachment {
   id: string
-  filename: string
   original_filename: string
   file_path: string
   file_size: number
   mime_type: string
+  file_type: string
   uploaded_by: string
   created_at: string
-  users: {
-    id: string
-    full_name: string | null
+  users?: {
+    full_name: string
     email: string
   }
 }
@@ -305,7 +304,7 @@ export function ProjectAttachments({ projectId }: ProjectAttachmentsProps) {
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span>{formatBytes(attachment.file_size)}</span>
                         <span>
-                          Por {attachment.users.full_name || attachment.users.email}
+                          Por {attachment.users?.full_name || attachment.users?.email || 'Usuário desconhecido'}
                         </span>
                         <span>
                           {new Date(attachment.created_at).toLocaleDateString('pt-BR')}

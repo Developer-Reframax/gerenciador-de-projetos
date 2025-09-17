@@ -144,9 +144,9 @@ export async function PUT(
       .from('comments')
       .select(`
         id,
-        user_id,
+        author_id,
         content,
-        project_id,
+        context_id,
         projects!inner(
           id,
           team:teams!inner(
@@ -171,7 +171,7 @@ export async function PUT(
     }
 
     // Verificar permissões (autor do comentário ou admin da equipe)
-    const isAuthor = comment.user_id === user.id
+    const isAuthor = comment.author_id === user.id
     const isTeamAdmin = (comment as CommentWithProject).projects?.team?.team_members?.some(
       (member: { user_id: string; role: string }) => member.user_id === user.id && member.role === 'admin'
     ) || false
@@ -286,9 +286,9 @@ export async function DELETE(
       .from('comments')
       .select(`
         id,
-        user_id,
+        author_id,
         content,
-        project_id,
+        context_id,
         projects!inner(
           id,
           team:teams!inner(
@@ -313,7 +313,7 @@ export async function DELETE(
     }
 
     // Verificar permissões (autor do comentário ou admin da equipe)
-    const isAuthor = comment.user_id === user.id
+    const isAuthor = comment.author_id === user.id
     const isTeamAdmin = (comment as CommentWithProject).projects?.team?.team_members?.some(
       (member: { user_id: string; role: string }) => member.user_id === user.id && member.role === 'admin'
     ) || false

@@ -15,7 +15,7 @@ import { ptBR } from 'date-fns/locale'
 
 export default function ProjectDetailsPage() {
   const params = useParams()
-  const projectId = params.id as string
+  const projectId = params?.id as string
   const { project, loading, error } = useProject(projectId)
 
   if (loading) {

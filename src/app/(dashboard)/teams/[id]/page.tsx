@@ -32,7 +32,7 @@ export default function TeamDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const teamId = params.id as string;
+  const teamId = params?.id as string;
   
   const { team, loading: teamLoading, error: teamError, updateTeam, deleteTeam } = useTeam(teamId);
   const { 

@@ -21,7 +21,7 @@ export async function GET(
     // Buscar o anexo e verificar se pertence ao projeto
     const { data: attachment, error } = await supabase
       .from('attachments')
-      .select('id, name, file_type, url')
+      .select('id, filename, file_type, file_path')
       .eq('id', attachmentId)
       .eq('project_id', projectId)
       .single();
@@ -36,7 +36,7 @@ export async function GET(
     // Gerar URL assinada para download (válida por 1 hora)
     const { data: signedUrl, error: urlError } = await supabase.storage
       .from('attachments')
-      .createSignedUrl(attachment.url, 3600);
+      .createSignedUrl(attachment.file_path, 3600);
 
     if (urlError) {
       console.error('Erro ao gerar URL assinada:', urlError);
@@ -97,7 +97,7 @@ export async function DELETE(
     // Deletar arquivo do storage
     const { error: storageError } = await supabase.storage
       .from('attachments')
-      .remove([attachment.url]);
+      .remove([attachment.file_path]);
 
     if (storageError) {
       console.error('Erro ao deletar do storage:', storageError);

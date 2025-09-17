@@ -81,11 +81,11 @@ CREATE POLICY "Users can view attachments of their projects" ON public.attachmen
                 AND tm.user_id = auth.uid()
             )
             OR
-            -- Usuário é o criador do projeto
+            -- Usuário é o dono do projeto
             EXISTS (
                 SELECT 1 FROM public.projects p
                 WHERE p.id = attachments.project_id 
-                AND p.created_by = auth.uid()
+                AND p.owner_id = auth.uid()
             )
         )
     );
@@ -103,11 +103,11 @@ CREATE POLICY "Users can upload attachments to their projects" ON public.attachm
                 AND tm.user_id = auth.uid()
             )
             OR
-            -- Usuário é o criador do projeto
+            -- Usuário é o dono do projeto
             EXISTS (
                 SELECT 1 FROM public.projects p
                 WHERE p.id = attachments.project_id 
-                AND p.created_by = auth.uid()
+                AND p.owner_id = auth.uid()
             )
         )
     );

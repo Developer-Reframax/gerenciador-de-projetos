@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // Buscar dados dos autores
-    const authorIds = comments?.map(c => c.user_id).filter(Boolean) || []
+    const authorIds = comments?.map(c => c.author_id).filter(Boolean) || []
     const { data: authors, error: authorsError } = await supabase
       .from('users')
       .select('id, email, full_name, avatar_url')
@@ -59,7 +59,7 @@ export async function GET(
 
     // Transformar os dados para o formato esperado pelo frontend
     const formattedComments = (comments || []).map(comment => {
-      const author = authorsMap.get(comment.user_id)
+      const author = authorsMap.get(comment.author_id)
       return {
         ...comment,
         author: {
@@ -92,15 +92,30 @@ export async function POST(
   try {
     const supabase = createRouteHandlerClient(await cookies())
 
+    // Verificar autenticação
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Não autorizado' },
+        { status: 401 }
+      )
+    }
+
     // Validar dados do request
     const body = await request.json()
     const validatedData = createCommentSchema.parse(body)
 
     // Criar comentário
     const insertData = {
+      context: 'project' as const,
+      context_id: projectId,
       content: validatedData.content,
-      project_id: projectId,
-      user_id: '2638c2e8-d7df-4ddd-8a33-61c3478a7f82' // ID fixo para teste
+      type: validatedData.type,
+      author_id: user.id,
+      parent_id: validatedData.parent_id,
+      mentioned_users: validatedData.mentioned_users,
+      is_internal: validatedData.is_internal,
+      project_id: projectId
     }
 
     const { data: comment, error: insertError } = await supabase
@@ -121,7 +136,7 @@ export async function POST(
     const { data: author, error: authorError } = await supabase
       .from('users')
       .select('id, email, full_name, avatar_url')
-      .eq('id', comment.user_id)
+      .eq('id', comment.author_id)
       .single() as { data: User | null; error: Error | null }
 
     if (authorError) {

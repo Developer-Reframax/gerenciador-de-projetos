@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 
+
 // GET - Listar anexos do projeto
 export async function GET(
   request: NextRequest,
@@ -23,12 +24,14 @@ export async function GET(
       .from('attachments')
       .select(`
         id,
-        url,
-        name,
+        file_path,
+        original_filename,
+        file_size,
+        mime_type,
         file_type,
         created_at,
-        user_id,
-        users!inner(full_name, email)
+        uploaded_by,
+        users!uploaded_by(full_name, email)
       `)
       .eq('project_id', projectId)
       .order('created_at', { ascending: false })
@@ -68,6 +71,11 @@ export async function POST(
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 })
     }
 
+    // Validar tamanho do arquivo
+    if (file.size < 0) {
+      return NextResponse.json({ error: 'Arquivo inválido' }, { status: 400 })
+    }
+
     // Gerar nome único para o arquivo
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -83,22 +91,43 @@ export async function POST(
       return NextResponse.json({ error: 'Erro ao fazer upload do arquivo' }, { status: 500 })
     }
 
-    // Obter URL pública do arquivo
-    const { data: { publicUrl } } = supabase.storage
-      .from('attachments')
-      .getPublicUrl(filePath)
+    // URL pública não é necessária para este endpoint
+
+    // Determinar tipo de arquivo baseado no MIME type
+    const getFileType = (mimeType: string): string => {
+      if (mimeType.startsWith('image/')) return 'image'
+      if (mimeType.startsWith('video/')) return 'video'
+      if (mimeType.startsWith('audio/')) return 'audio'
+      if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text')) return 'document'
+      if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('tar')) return 'archive'
+      if (mimeType.includes('javascript') || mimeType.includes('json') || mimeType.includes('xml')) return 'code'
+      return 'other'
+    }
 
     // Salvar informações no banco
     const { data: attachment, error: dbError } = await supabase
       .from('attachments')
       .insert({
         project_id: projectId,
-        user_id: user.id,
-        url: publicUrl,
-        name: file.name,
-        file_type: file.type || null
+        uploaded_by: user.id,
+        filename: fileName,
+        original_filename: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        mime_type: file.type || 'application/octet-stream',
+        file_type: getFileType(file.type || 'application/octet-stream')
       })
-      .select()
+      .select(`
+        id,
+        file_path,
+        original_filename,
+        file_size,
+        mime_type,
+        file_type,
+        created_at,
+        uploaded_by,
+        users!uploaded_by(full_name, email)
+      `)
       .single()
 
     if (dbError) {

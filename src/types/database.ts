@@ -11,34 +11,43 @@ export type Database = {
     Tables: {
       attachments: {
         Row: {
-          id: string
-          project_id: string
-          user_id: string
-          url: string
-          name: string
-          file_type: string | null
           created_at: string | null
+          file_path: string
+          file_size: number
+          file_type: string | null
+          filename: string
+          id: string
+          mime_type: string
+          original_filename: string
+          project_id: string
           updated_at: string | null
+          uploaded_by: string
         }
         Insert: {
-          id?: string
-          project_id: string
-          user_id: string
-          url: string
-          name: string
-          file_type?: string | null
           created_at?: string | null
+          file_path: string
+          file_size: number
+          file_type?: string | null
+          filename: string
+          id?: string
+          mime_type: string
+          original_filename: string
+          project_id: string
           updated_at?: string | null
+          uploaded_by: string
         }
         Update: {
-          id?: string
-          project_id?: string
-          user_id?: string
-          url?: string
-          name?: string
-          file_type?: string | null
           created_at?: string | null
+          file_path?: string
+          file_size?: number
+          file_type?: string | null
+          filename?: string
+          id?: string
+          mime_type?: string
+          original_filename?: string
+          project_id?: string
           updated_at?: string | null
+          uploaded_by?: string
         }
         Relationships: [
           {
@@ -49,8 +58,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "attachments_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -60,41 +69,74 @@ export type Database = {
       comments: {
         Row: {
           id: string
+          context: Database["public"]["Enums"]["comment_context"]
+          context_id: string
+          type: Database["public"]["Enums"]["comment_type"]
           content: string
-          created_at: string
-          updated_at: string
-          user_id: string
-          project_id: string
+          content_html: string | null
+          author_id: string
+          parent_id: string | null
+          mentioned_users: string[] | null
+          is_edited: boolean | null
+          is_pinned: boolean | null
+          is_internal: boolean | null
+          reactions: Json | null
+          created_at: string | null
+          updated_at: string | null
+          edited_at: string | null
+          project_id: string | null
         }
         Insert: {
           id?: string
+          context: Database["public"]["Enums"]["comment_context"]
+          context_id: string
+          type?: Database["public"]["Enums"]["comment_type"]
           content: string
-          created_at?: string
-          updated_at?: string
-          user_id: string
-          project_id: string
+          content_html?: string | null
+          author_id: string
+          parent_id?: string | null
+          mentioned_users?: string[] | null
+          is_edited?: boolean | null
+          is_pinned?: boolean | null
+          is_internal?: boolean | null
+          reactions?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+          edited_at?: string | null
+          project_id?: string | null
         }
         Update: {
           id?: string
+          context?: Database["public"]["Enums"]["comment_context"]
+          context_id?: string
+          type?: Database["public"]["Enums"]["comment_type"]
           content?: string
-          created_at?: string
-          updated_at?: string
-          user_id?: string
-          project_id?: string
+          content_html?: string | null
+          author_id?: string
+          parent_id?: string | null
+          mentioned_users?: string[] | null
+          is_edited?: boolean | null
+          is_pinned?: boolean | null
+          is_internal?: boolean | null
+          reactions?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+          edited_at?: string | null
+          project_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "comments_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: "comments_author_id_fkey"
+            columns: ["author_id"]
             isOneToOne: false
-            referencedRelation: "projects"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "comments_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "comments"
             referencedColumns: ["id"]
           }
         ]
@@ -617,8 +659,51 @@ export type Database = {
           completed_tasks: number
         }[]
       }
+      get_kanban_project_status_data: {
+        Args: {
+          p_team_id: string
+          p_priority_filter?: string | null
+        }
+        Returns: {
+          status: string
+          status_label: string
+          projects: {
+            id: string
+            name: string
+            description: string
+            priority: string
+            due_date: string
+            progress_percentage: number
+            owner_name: string
+            total_tasks: number
+            completed_tasks: number
+          }[]
+        }[]
+      }
+      get_kanban_assignee_data: {
+        Args: {
+          p_team_id: string
+          p_priority_filter?: string | null
+        }
+        Returns: {
+          assignee_id: string
+          assignee_name: string
+          assignee_avatar: string
+          tasks: {
+            id: string
+            title: string
+            description: string
+            priority: string
+            status: string
+            due_date: string
+            project_name: string
+          }[]
+        }[]
+      }
     }
     Enums: {
+      comment_context: "task" | "project" | "team"
+      comment_type: "comment" | "status_change" | "assignment" | "mention" | "system"
       project_priority: "low" | "medium" | "high" | "urgent"
       project_role: "owner" | "admin" | "member" | "viewer"
       project_status: "planning" | "active" | "on_hold" | "completed" | "cancelled"
