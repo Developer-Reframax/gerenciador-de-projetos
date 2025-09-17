@@ -99,6 +99,123 @@ export interface ProjectContextType {
   fetchProjects: (filters?: ProjectFilters) => Promise<void>
 }
 
+// Tipos para entidades estratégicas
+export interface StrategicObjective {
+  id: string
+  name: string
+  description?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface StrategicPillar {
+  id: string
+  name: string
+  description?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Tag {
+  id: string
+  name: string
+  color?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ProjectTag {
+  id: string
+  project_id: string
+  tag_id: string
+  created_at?: string
+  tags?: Tag
+}
+
+// Tipos para formulários estratégicos
+export interface CreateStrategicObjectiveForm {
+  name: string
+  description?: string
+}
+
+export interface CreateStrategicPillarForm {
+  name: string
+  description?: string
+}
+
+export interface CreateTagForm {
+  name: string
+  color?: string
+}
+
+export interface UpdateProjectStrategicForm {
+  strategic_objective_id?: string | null
+  strategic_pillar_id?: string | null
+  request_date?: string | null
+  committee_approval_date?: string | null
+  real_start_date?: string | null
+  real_end_date?: string | null
+  tag_ids?: string[]
+  area_ids?: string[]
+  stakeholder_ids?: string[]
+  lessons_learned?: string | null
+}
+
+// Tipos para respostas da API estratégica
+export interface StrategicObjectivesResponse {
+  data: StrategicObjective[]
+}
+
+export interface StrategicPillarsResponse {
+  data: StrategicPillar[]
+}
+
+export interface TagsResponse {
+  data: Tag[]
+}
+
+export interface Area {
+  id: string
+  name: string
+  description?: string
+  color: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Stakeholder {
+  id: string
+  user_id: string
+  user_name: string
+  user_email: string
+  role?: string
+  created_at?: string
+}
+
+export interface LessonsLearned {
+  content: string
+  updated_at?: string
+}
+
+export interface ProjectStrategicInfoResponse {
+  id: string
+  name: string
+  strategic_objective_id?: string | null
+  strategic_pillar_id?: string | null
+  request_date?: string | null
+  committee_approval_date?: string | null
+  real_start_date?: string | null
+  real_end_date?: string | null
+  strategic_objectives?: StrategicObjective | null
+  strategic_pillars?: StrategicPillar | null
+  tags: Tag[]
+  areas: Area[]
+  stakeholders: Stakeholder[]
+  lessons_learned?: string | null
+  created_at: string
+  updated_at: string
+}
+
 // Tipos para hooks
 export interface UseProjectsReturn {
   projects: Database['public']['Tables']['projects']['Row'][]

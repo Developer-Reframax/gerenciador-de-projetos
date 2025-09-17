@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { ProjectSchedule } from '@/components/projects/project-schedule'
 import { ProjectComments } from '@/components/comments/project-comments'
 import { ProjectAttachments } from '@/components/projects/project-attachments'
+import { ProjectStrategicInfo } from '@/components/projects/project-strategic-info'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -96,8 +97,9 @@ export default function ProjectDetailsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="details" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Detalhes</TabsTrigger>
+              <TabsTrigger value="strategic">Estratégico</TabsTrigger>
               <TabsTrigger value="schedule">Cronograma</TabsTrigger>
               <TabsTrigger value="comments">Comentários</TabsTrigger>
               <TabsTrigger value="attachments">Anexos</TabsTrigger>
@@ -212,6 +214,11 @@ export default function ProjectDetailsPage() {
           </div>
 
 
+        </TabsContent>
+
+        {/* Aba Estratégico */}
+        <TabsContent value="strategic">
+          <ProjectStrategicInfo projectId={projectId} />
         </TabsContent>
 
         {/* Aba Cronograma */}

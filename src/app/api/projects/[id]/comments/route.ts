@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
-import type { User } from '@/types/supabase'
 
 
 
@@ -137,7 +136,7 @@ export async function POST(
       .from('users')
       .select('id, email, full_name, avatar_url')
       .eq('id', comment.author_id)
-      .single() as { data: User | null; error: Error | null }
+      .single()
 
     if (authorError) {
       console.error('Erro ao buscar autor:', authorError)

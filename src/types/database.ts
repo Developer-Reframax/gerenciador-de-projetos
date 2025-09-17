@@ -206,6 +206,13 @@ export type Database = {
           is_active: boolean | null
           deleted_at: string | null
           requester_id: string | null
+          strategic_objective_id: string | null
+          strategic_pillar_id: string | null
+          request_date: string | null
+          committee_approval_date: string | null
+          real_start_date: string | null
+          real_end_date: string | null
+          lessons_learned: string | null
         }
         Insert: {
           id?: string
@@ -232,6 +239,13 @@ export type Database = {
           is_active?: boolean | null
           deleted_at?: string | null
           requester_id?: string | null
+          strategic_objective_id?: string | null
+          strategic_pillar_id?: string | null
+          request_date?: string | null
+          committee_approval_date?: string | null
+          real_start_date?: string | null
+          real_end_date?: string | null
+          lessons_learned?: string | null
         }
         Update: {
           id?: string
@@ -258,6 +272,13 @@ export type Database = {
           is_active?: boolean | null
           deleted_at?: string | null
           requester_id?: string | null
+          strategic_objective_id?: string | null
+          strategic_pillar_id?: string | null
+          request_date?: string | null
+          committee_approval_date?: string | null
+          real_start_date?: string | null
+          real_end_date?: string | null
+          lessons_learned?: string | null
         }
         Relationships: [
           {
@@ -272,6 +293,56 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_strategic_objective_id_fkey"
+            columns: ["strategic_objective_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_strategic_pillar_id_fkey"
+            columns: ["strategic_pillar_id"]
+            isOneToOne: false
+            referencedRelation: "strategic_pillars"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      project_tags: {
+        Row: {
+          id: string
+          project_id: string
+          tag_id: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          tag_id: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          tag_id?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tags_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
             referencedColumns: ["id"]
           }
         ]
@@ -316,6 +387,87 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
+      }
+      strategic_objectives: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      strategic_pillars: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          id: string
+          name: string
+          color: string | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          color?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          color?: string | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       tasks: {
         Row: {
@@ -590,6 +742,123 @@ export type Database = {
           }
         ]
       }
+      areas: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          color: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          color?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          color?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_areas: {
+        Row: {
+          id: string
+          project_id: string
+          area_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          area_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          area_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_areas_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      project_stakeholders: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string
+          role: string
+          influence_level: string
+          interest_level: string
+          communication_frequency: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id: string
+          role: string
+          influence_level: string
+          interest_level: string
+          communication_frequency?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string
+          role?: string
+          influence_level?: string
+          interest_level?: string
+          communication_frequency?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_stakeholders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_stakeholders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       users: {
         Row: {
           id: string
@@ -716,4 +985,41 @@ export type Database = {
       [_ in never]: never
     }
   }
+}
+
+// Tipos auxiliares para facilitar o uso
+export type Area = Database['public']['Tables']['areas']['Row']
+export type AreaInsert = Database['public']['Tables']['areas']['Insert']
+export type AreaUpdate = Database['public']['Tables']['areas']['Update']
+
+export type ProjectArea = Database['public']['Tables']['project_areas']['Row']
+export type ProjectAreaInsert = Database['public']['Tables']['project_areas']['Insert']
+export type ProjectAreaUpdate = Database['public']['Tables']['project_areas']['Update']
+
+export type ProjectStakeholder = Database['public']['Tables']['project_stakeholders']['Row']
+export type ProjectStakeholderInsert = Database['public']['Tables']['project_stakeholders']['Insert']
+export type ProjectStakeholderUpdate = Database['public']['Tables']['project_stakeholders']['Update']
+
+export type Project = Database['public']['Tables']['projects']['Row']
+export type ProjectInsert = Database['public']['Tables']['projects']['Insert']
+export type ProjectUpdate = Database['public']['Tables']['projects']['Update']
+
+export type User = Database['public']['Tables']['users']['Row']
+export type UserInsert = Database['public']['Tables']['users']['Insert']
+export type UserUpdate = Database['public']['Tables']['users']['Update']
+
+// Tipos específicos para stakeholders
+export type StakeholderRole = 'sponsor' | 'stakeholder' | 'user' | 'decision_maker' | 'influencer'
+export type InfluenceLevel = 'low' | 'medium' | 'high'
+export type InterestLevel = 'low' | 'medium' | 'high'
+export type CommunicationFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'as_needed'
+
+// Tipo para stakeholder com informações do usuário
+export type StakeholderWithUser = ProjectStakeholder & {
+  user: Pick<User, 'id' | 'full_name' | 'email' | 'avatar_url'>
+}
+
+// Tipo para área com contagem de projetos
+export type AreaWithProjectCount = Area & {
+  project_count?: number
 }
