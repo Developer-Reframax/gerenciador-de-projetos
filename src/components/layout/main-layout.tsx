@@ -18,13 +18,14 @@ import {
   Calendar, 
   FileText, 
   Settings, 
-  Bell, 
   Search,
   LogOut,
   User,
   ChevronLeft,
   ChevronRight
 } from "lucide-react"
+import { NotificationBadge, NotificationCenter } from "@/components/notifications"
+import { useNotifications } from "@/hooks/useNotifications"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -71,9 +72,11 @@ const sidebarItems = [
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
   const pathname = usePathname()
   const isMobile = useIsMobile()
   const { user, signOut, loading } = useAuth()
+  const { notifications } = useNotifications()
 
   const handleSignOut = async () => {
     await signOut()
@@ -216,12 +219,18 @@ export function MainLayout({ children }: MainLayoutProps) {
 
           <div className="flex items-center gap-4">
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
-                3
-              </span>
-            </Button>
+            <div className="relative">
+              <NotificationBadge 
+                count={notifications?.filter(n => !n.status_viewer)?.length || 0}
+                onClick={() => setNotificationCenterOpen(!notificationCenterOpen)}
+              />
+              {notificationCenterOpen && (
+                <NotificationCenter 
+                  isOpen={notificationCenterOpen}
+                  onClose={() => setNotificationCenterOpen(false)}
+                />
+              )}
+            </div>
 
             {/* User Menu */}
             <DropdownMenu>

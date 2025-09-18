@@ -935,6 +935,50 @@ export type Database = {
           }
         ]
       }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          message: string
+          type: string
+          priority: "low" | "normal" | "high" | "urgent"
+          status_viewer: boolean
+          status_email: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          message: string
+          type: string
+          priority?: "low" | "normal" | "high" | "urgent"
+          status_viewer?: boolean
+          status_email?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          message?: string
+          type?: string
+          priority?: "low" | "normal" | "high" | "urgent"
+          status_viewer?: boolean
+          status_email?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       users: {
         Row: {
           id: string
@@ -1083,6 +1127,10 @@ export type ProjectUpdate = Database['public']['Tables']['projects']['Update']
 export type User = Database['public']['Tables']['users']['Row']
 export type UserInsert = Database['public']['Tables']['users']['Insert']
 export type UserUpdate = Database['public']['Tables']['users']['Update']
+
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
+export type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
 
 // Tipos específicos para stakeholders
 export type StakeholderRole = 'sponsor' | 'stakeholder' | 'user' | 'decision_maker' | 'influencer'

@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '../../../../src/lib/supabase-server';
-import type { ProjectDeviationInsert, ProjectDeviationWithUsers } from '../../../../src/types/database';
+import type { ProjectDeviationInsert } from '../../../../src/types/database';
+// import type { ProjectDeviationWithUsers } from '../../../../src/types/database';
 
 interface CreateDeviationForm {
   description: string;
@@ -206,10 +207,10 @@ export async function createProjectDeviation(req: Request, res: Response) {
 /**
  * Função auxiliar para validar formato de data
  */
-function isValidDate(dateString: string): boolean {
-  const regex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!regex.test(dateString)) return false;
-  
-  const date = new Date(dateString);
-  return date instanceof Date && !isNaN(date.getTime());
-}
+// function isValidDate(dateString: string): boolean {
+//   const regex = /^\d{4}-\d{2}-\d{2}$/;
+//   if (!regex.test(dateString)) return false;
+//   
+//   const date = new Date(dateString);
+//   return date instanceof Date && !isNaN(date.getTime());
+// }

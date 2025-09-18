@@ -23,9 +23,9 @@ export function UserForm({ isOpen, onClose, onSubmit, user, loading = false }: U
     email: user?.email || '',
     full_name: user?.full_name || '',
     role: (user?.role as "user" | "admin" | "editor" | "membro") || 'user',
-    bio: user?.bio || '',
-    timezone: user?.timezone || 'America/Sao_Paulo',
-    language: user?.language || 'pt-BR'
+    bio: '',
+    timezone: 'America/Sao_Paulo',
+    language: 'pt-BR'
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -37,9 +37,9 @@ export function UserForm({ isOpen, onClose, onSubmit, user, loading = false }: U
         email: user.email || '',
         full_name: user.full_name || '',
         role: (user.role as "user" | "admin" | "editor" | "membro") || 'user',
-        bio: user.bio || '',
-        timezone: user.timezone || 'America/Sao_Paulo',
-        language: user.language || 'pt-BR'
+        bio: '',
+        timezone: 'America/Sao_Paulo',
+        language: 'pt-BR'
       })
     } else {
       setFormData({

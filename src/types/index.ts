@@ -7,6 +7,9 @@ export type { Database }
 // Re-exportar tipos de usuário
 export * from './user'
 
+// Re-exportar tipos de notificações
+export * from './notifications'
+
 // Tipos para formulários
 export interface CreateProjectForm {
   name: string
