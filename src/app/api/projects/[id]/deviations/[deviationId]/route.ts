@@ -72,7 +72,6 @@ export async function PUT(
       requested_by: string | null;
       evaluation_criteria: string;
       impact_type: string;
-      generates_impediment: boolean;
       requires_approval: boolean;
       approver_id: string | null;
       approval_notes: string | null;
@@ -86,7 +85,6 @@ export async function PUT(
       requested_by: body.was_requested ? body.requested_by : null,
       evaluation_criteria: body.evaluation_criteria,
       impact_type: body.impact_type,
-      generates_impediment: body.generates_impediment || false,
       requires_approval: body.requires_approval || false,
       approver_id: body.requires_approval ? body.approver_id : null,
       approval_notes: body.approval_notes || null,
@@ -120,17 +118,7 @@ export async function PUT(
       )
     }
 
-    // Se o desvio for impeditivo E aprovado, atualizar status do projeto para Paralisado
-    if (body.generates_impediment && body.status === 'Aprovado') {
-      const { error: projectUpdateError } = await supabase
-        .from('projects')
-        .update({ status: 'blocked' })
-        .eq('id', projectId)
 
-      if (projectUpdateError) {
-        console.error('Erro ao atualizar status do projeto:', projectUpdateError)
-      }
-    }
 
     return NextResponse.json({ deviation })
 
@@ -193,7 +181,7 @@ export async function DELETE(
     // Verificar se o desvio existe
     const { data: deviation, error: deviationError } = await supabase
       .from('project_deviations')
-      .select('id, generates_impediment')
+      .select('id')
       .eq('id', deviationId)
       .eq('project_id', projectId)
       .single()
@@ -220,23 +208,7 @@ export async function DELETE(
       )
     }
 
-    // Se o desvio deletado era impeditivo, verificar se ainda há outros desvios impeditivos
-    // Se não houver, remover o status de bloqueado do projeto
-    if (deviation.generates_impediment) {
-      const { data: remainingImpediments } = await supabase
-        .from('project_deviations')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('generates_impediment', true)
 
-      // Se não há mais desvios impeditivos, remover o status de bloqueado
-      if (!remainingImpediments || remainingImpediments.length === 0) {
-        await supabase
-          .from('projects')
-          .update({ status: 'active' })
-          .eq('id', projectId)
-      }
-    }
 
     return NextResponse.json({ message: 'Desvio deletado com sucesso' })
 

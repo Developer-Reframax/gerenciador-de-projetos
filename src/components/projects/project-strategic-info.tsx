@@ -396,7 +396,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
               </Select>
             ) : (
               <div className="text-sm">
-                {projectData?.strategic_objectives?.name || 'Não definido'}
+                {projectData?.strategic_objective?.name || 'Não definido'}
               </div>
             )}
           </div>
@@ -435,7 +435,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
               </Select>
             ) : (
               <div className="text-sm">
-                {projectData?.strategic_pillars?.name || 'Não definido'}
+                {projectData?.strategic_pillar?.name || 'Não definido'}
               </div>
             )}
           </div>

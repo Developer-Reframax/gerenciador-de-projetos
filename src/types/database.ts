@@ -814,7 +814,6 @@ export type Database = {
           requested_by: string | null
           evaluation_criteria: string
           impact_type: string
-          generates_impediment: boolean
           requires_approval: boolean
           approver_id: string | null
           status: string
@@ -831,7 +830,6 @@ export type Database = {
           requested_by?: string | null
           evaluation_criteria: string
           impact_type: string
-          generates_impediment?: boolean
           requires_approval?: boolean
           approver_id?: string | null
           status?: string
@@ -848,7 +846,6 @@ export type Database = {
           requested_by?: string | null
           evaluation_criteria?: string
           impact_type?: string
-          generates_impediment?: boolean
           requires_approval?: boolean
           approver_id?: string | null
           status?: string

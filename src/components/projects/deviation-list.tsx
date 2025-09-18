@@ -47,7 +47,7 @@ export function DeviationList({ projectId, deviations, onRefresh }: DeviationLis
   const [editingDeviation, setEditingDeviation] = React.useState<ProjectDeviationWithUsers | undefined>()
   const [searchTerm, setSearchTerm] = React.useState('')
   const [statusFilter, setStatusFilter] = React.useState<string>('all')
-  const [impedimentFilter, setImpedimentFilter] = React.useState<string>('all')
+
   const [loading, setLoading] = React.useState(false)
 
   // Filtrar desvios
@@ -59,14 +59,9 @@ export function DeviationList({ projectId, deviations, onRefresh }: DeviationLis
       
       const matchesStatus = statusFilter === 'all' || deviation.status === statusFilter
       
-      const matchesImpediment = 
-        impedimentFilter === 'all' ||
-        (impedimentFilter === 'impediment' && deviation.generates_impediment) ||
-        (impedimentFilter === 'normal' && !deviation.generates_impediment)
-      
-      return matchesSearch && matchesStatus && matchesImpediment
+      return matchesSearch && matchesStatus
     })
-  }, [deviations, searchTerm, statusFilter, impedimentFilter])
+  }, [deviations, searchTerm, statusFilter])
 
   const handleCreateDeviation = () => {
     setEditingDeviation(undefined)
@@ -147,17 +142,7 @@ export function DeviationList({ projectId, deviations, onRefresh }: DeviationLis
               </SelectContent>
             </Select>
 
-            <Select value={impedimentFilter} onValueChange={setImpedimentFilter}>
-              <SelectTrigger className="w-[140px]">
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                <SelectItem value="impediment">Impedimentos</SelectItem>
-                <SelectItem value="normal">Normais</SelectItem>
-              </SelectContent>
-            </Select>
+
           </div>
         </div>
 
@@ -192,21 +177,13 @@ export function DeviationList({ projectId, deviations, onRefresh }: DeviationLis
           filteredDeviations.map((deviation) => (
             <Card 
               key={deviation.id} 
-              className={`transition-all hover:shadow-md ${
-                deviation.generates_impediment ? 'border-red-200 bg-red-50' : ''
-              }`}
+              className="transition-all hover:shadow-md"
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <CardTitle className="text-lg">{deviation.description}</CardTitle>
-                      {deviation.generates_impediment && (
-                        <Badge variant="destructive" className="flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          Impedimento
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <Badge 

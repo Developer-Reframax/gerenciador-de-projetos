@@ -21,7 +21,7 @@ export default function ProjectDetailsPage() {
   const params = useParams()
   const projectId = params?.id as string
   const { project, loading, error } = useProject(projectId)
-  const { deviations, hasImpediments, refetch: refetchDeviations } = useProjectDeviations(projectId)
+  const { deviations, refetch: refetchDeviations } = useProjectDeviations(projectId)
 
   if (loading) {
     return (
@@ -107,11 +107,8 @@ export default function ProjectDetailsPage() {
               <TabsTrigger value="details">Detalhes</TabsTrigger>
               <TabsTrigger value="strategic">Estratégico</TabsTrigger>
               <TabsTrigger value="schedule">Cronograma</TabsTrigger>
-              <TabsTrigger value="deviations" className="relative">
+              <TabsTrigger value="deviations">
                 Desvios
-                {hasImpediments && (
-                  <AlertTriangle className="h-3 w-3 text-red-500 absolute -top-1 -right-1" />
-                )}
               </TabsTrigger>
               <TabsTrigger value="comments">Comentários</TabsTrigger>
               <TabsTrigger value="attachments">Anexos</TabsTrigger>
@@ -223,16 +220,7 @@ export default function ProjectDetailsPage() {
             </div>
           </div>
 
-          {/* Alerta de Impedimentos */}
-          {hasImpediments && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                <strong>Atenção:</strong> Este projeto possui desvios impeditivos ativos que podem estar impactando o andamento.
-                Verifique a aba &quot;Desvios&quot; para mais detalhes.
-              </AlertDescription>
-            </Alert>
-          )}
+
         </TabsContent>
 
         {/* Aba Estratégico */}

@@ -8,7 +8,6 @@ interface UseProjectDeviationsReturn {
   loading: boolean
   error: string | null
   refetch: () => void
-  hasImpediments: boolean
 }
 
 export function useProjectDeviations(projectId: string): UseProjectDeviationsReturn {
@@ -51,17 +50,10 @@ export function useProjectDeviations(projectId: string): UseProjectDeviationsRet
     fetchDeviations()
   }
 
-  // Verificar se há impedimentos ativos
-  const hasImpediments = deviations.some(
-    deviation => deviation.generates_impediment && 
-    ['Pendente', 'Em análise', 'Aprovado'].includes(deviation.status)
-  )
-
   return {
     deviations,
     loading,
     error,
-    refetch,
-    hasImpediments
+    refetch
   }
 }

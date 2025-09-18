@@ -35,8 +35,7 @@ const deviationSchema = z.object({
   requested_by: z.string().optional(),
   evaluation_criteria: z.string().min(1, 'Critério de avaliação é obrigatório'),
   impact_type: z.string().min(1, 'Tipo de impacto é obrigatório'),
-  is_impediment: z.boolean(),
-  requires_approval: z.boolean(),
+  requires_approval: z.boolean().default(false),
   approver_id: z.string().optional(),
   status: z.string().optional(),
   approved_by: z.string().optional(),
@@ -100,7 +99,6 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
       requested_by: deviation?.requested_by || '',
       evaluation_criteria: deviation?.evaluation_criteria || 'Fatores externo',
       impact_type: deviation?.impact_type || 'Não se aplica',
-      is_impediment: deviation?.generates_impediment || false,
       requires_approval: deviation?.requires_approval || false,
       approver_id: deviation?.approver_id || '',
       status: deviation?.status || 'Pendente',
@@ -130,13 +128,9 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
       const method = deviation ? 'PUT' : 'POST'
       
       const requestData = {
-        description: data.description,
-        was_requested: data.was_requested,
+        ...data,
+        project_id: projectId,
         requested_by: data.was_requested ? (data.requested_by || user.id) : null,
-        evaluation_criteria: data.evaluation_criteria,
-        impact_type: data.impact_type,
-        generates_impediment: data.is_impediment,
-        requires_approval: data.requires_approval,
         approver_id: data.requires_approval ? data.approver_id : null,
         status: data.status || 'Pendente',
         approved_at: data.approval_date || null,
@@ -293,27 +287,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
           )}
         />
 
-        {/* É Impedimento */}
-        <FormField
-          control={form.control}
-          name="is_impediment"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Impedimento</FormLabel>
-                <FormDescription>
-                  Marque se este desvio é um impedimento que paralisa o projeto
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+
 
         {/* Requer Aprovação */}
         <FormField

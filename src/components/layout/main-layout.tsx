@@ -11,18 +11,18 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { 
-  Menu, 
+  Menu,
   Home, 
   Users, 
   FolderKanban, 
   Calendar, 
-  FileText, 
   Settings, 
   Search,
   LogOut,
   User,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from "lucide-react"
 import { NotificationBadge, NotificationCenter } from "@/components/notifications"
 import { useNotifications } from "@/hooks/useNotifications"
@@ -99,7 +99,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <FolderKanban className="h-4 w-4 text-primary-foreground" />
           </div>
           {(!isMobile && sidebarOpen) && (
-            <span className="font-semibold text-lg">ProjectHub</span>
+            <span className="font-semibold text-lg">Hub Max</span>
           )}
         </div>
       </div>
