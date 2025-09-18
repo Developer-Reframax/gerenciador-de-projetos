@@ -805,6 +805,82 @@ export type Database = {
           }
         ]
       }
+      project_deviations: {
+        Row: {
+          id: string
+          project_id: string
+          description: string
+          was_requested: boolean
+          requested_by: string | null
+          evaluation_criteria: string
+          impact_type: string
+          generates_impediment: boolean
+          requires_approval: boolean
+          approver_id: string | null
+          status: string
+          approval_notes: string | null
+          created_at: string | null
+          approved_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          description: string
+          was_requested?: boolean
+          requested_by?: string | null
+          evaluation_criteria: string
+          impact_type: string
+          generates_impediment?: boolean
+          requires_approval?: boolean
+          approver_id?: string | null
+          status?: string
+          approval_notes?: string | null
+          created_at?: string | null
+          approved_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          description?: string
+          was_requested?: boolean
+          requested_by?: string | null
+          evaluation_criteria?: string
+          impact_type?: string
+          generates_impediment?: boolean
+          requires_approval?: boolean
+          approver_id?: string | null
+          status?: string
+          approval_notes?: string | null
+          created_at?: string | null
+          approved_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_deviations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deviations_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_deviations_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       project_stakeholders: {
         Row: {
           id: string
@@ -975,7 +1051,7 @@ export type Database = {
       comment_type: "comment" | "status_change" | "assignment" | "mention" | "system"
       project_priority: "low" | "medium" | "high" | "urgent"
       project_role: "owner" | "admin" | "member" | "viewer"
-      project_status: "planning" | "active" | "on_hold" | "completed" | "cancelled"
+      project_status: "planning" | "active" | "on_hold" | "completed" | "cancelled" | "blocked"
       task_priority: "low" | "medium" | "high" | "urgent"
       task_status: "todo" | "in_progress" | "review" | "blocked" | "completed" | "cancelled"
       team_role: "owner" | "admin" | "member"
@@ -1022,4 +1098,20 @@ export type StakeholderWithUser = ProjectStakeholder & {
 // Tipo para área com contagem de projetos
 export type AreaWithProjectCount = Area & {
   project_count?: number
+}
+
+// Tipos para desvios de projeto
+export type ProjectDeviation = Database['public']['Tables']['project_deviations']['Row']
+export type ProjectDeviationInsert = Database['public']['Tables']['project_deviations']['Insert']
+export type ProjectDeviationUpdate = Database['public']['Tables']['project_deviations']['Update']
+
+// Enums específicos para desvios
+export type DeviationEvaluationCriteria = 'Fatores externo' | 'Inovação' | 'Medida corretiva' | 'Melhorias' | 'Repriorização'
+export type DeviationImpactType = 'Custo/orçamento' | 'Aumento de escopo' | 'Não se aplica'
+export type DeviationStatus = 'Pendente' | 'Aprovado' | 'Rejeitado' | 'Em análise' | 'Implementado'
+
+// Tipo para desvio com informações do usuário
+export type ProjectDeviationWithUsers = ProjectDeviation & {
+  requested_by_user?: Pick<User, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
+  approver_user?: Pick<User, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
 }

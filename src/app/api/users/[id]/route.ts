@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase-server'
 import { UpdateUserForm } from '@/types/user'
 import { Database } from '@/types/database'
+import { cookies } from 'next/headers'
 
 // GET - Buscar usuário por ID
 export async function GET(
@@ -10,7 +11,8 @@ export async function GET(
 ) {
   const { id } = await params
   try {
-    const supabaseClient = createRouteHandlerClient(request.cookies)
+    const cookieStore = await cookies()
+    const supabaseClient = createRouteHandlerClient(cookieStore)
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
@@ -46,7 +48,8 @@ export async function PUT(
 ) {
   const { id } = await params
   try {
-    const supabaseClient = createRouteHandlerClient(request.cookies)
+    const cookieStore = await cookies()
+    const supabaseClient = createRouteHandlerClient(cookieStore)
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
@@ -54,29 +57,18 @@ export async function PUT(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Verificar se o usuário tem permissão para editar usuários
+    // Buscar dados do usuário atual para verificações de permissão
     const { data: currentUser } = await supabaseClient
       .from('users')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    // Usuários podem editar a si mesmos, admins e editores podem editar outros
-    const canEdit = user.id === id || 
-                   (currentUser?.role && ['admin', 'editor'].includes(currentUser.role || ''))
-
-    if (!canEdit) {
-      return NextResponse.json(
-        { error: 'Sem permissão para editar este usuário' },
-        { status: 403 }
-      )
-    }
-
     const body = await request.json() as UpdateUserForm
     const { full_name, role, bio, timezone, language, is_active } = body
 
-    // Validar dados obrigatórios
-    if (!full_name) {
+    // Validar dados obrigatórios - nome completo só é obrigatório se estiver sendo atualizado
+    if (full_name !== undefined && !full_name) {
       return NextResponse.json(
         { error: 'Nome completo é obrigatório' },
         { status: 400 }
@@ -100,22 +92,32 @@ export async function PUT(
 
     // Preparar dados para atualização
     const updateData: {
-      full_name: string;
-      bio: string | null;
-      timezone: string;
-      language: string;
+      full_name?: string;
+      bio?: string | null;
+      timezone?: string;
+      language?: string;
       updated_at: string;
       role?: string;
       is_active?: boolean;
     } = {
-      full_name,
-      bio: bio || null,
-      timezone: timezone || 'America/Sao_Paulo',
-      language: language || 'pt-BR',
       updated_at: new Date().toISOString()
     }
 
-    // Apenas admins podem alterar role e status
+    // Adicionar campos apenas se foram fornecidos
+    if (full_name !== undefined) {
+      updateData.full_name = full_name
+    }
+    if (bio !== undefined) {
+      updateData.bio = bio || null
+    }
+    if (timezone !== undefined) {
+      updateData.timezone = timezone || 'America/Sao_Paulo'
+    }
+    if (language !== undefined) {
+      updateData.language = language || 'pt-BR'
+    }
+
+    // Apenas admins podem alterar role
     if (currentUser && currentUser.role === 'admin') {
       if (role) {
         const validRoles = ['admin', 'editor', 'membro', 'user']
@@ -127,10 +129,11 @@ export async function PUT(
         }
         updateData.role = role
       }
-      
-      if (typeof is_active === 'boolean') {
-        updateData.is_active = is_active
-      }
+    }
+
+    // Qualquer usuário autenticado pode alterar status is_active
+    if (typeof is_active === 'boolean') {
+      updateData.is_active = is_active
     }
 
     // Atualizar usuário
@@ -185,7 +188,8 @@ export async function DELETE(
 ) {
   const { id } = await params
   try {
-    const supabaseClient = createRouteHandlerClient(request.cookies)
+    const cookieStore = await cookies()
+    const supabaseClient = createRouteHandlerClient(cookieStore)
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()

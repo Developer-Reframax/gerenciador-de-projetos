@@ -2,15 +2,18 @@
 
 import { useParams } from 'next/navigation'
 import { useProject } from '@/hooks/use-projects'
+import { useProjectDeviations } from '@/hooks/use-project-deviations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Users } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ArrowLeft, Users, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { ProjectSchedule } from '@/components/projects/project-schedule'
 import { ProjectComments } from '@/components/comments/project-comments'
 import { ProjectAttachments } from '@/components/projects/project-attachments'
 import { ProjectStrategicInfo } from '@/components/projects/project-strategic-info'
+import { DeviationList } from '@/components/projects/deviation-list'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -18,6 +21,7 @@ export default function ProjectDetailsPage() {
   const params = useParams()
   const projectId = params?.id as string
   const { project, loading, error } = useProject(projectId)
+  const { deviations, hasImpediments, refetch: refetchDeviations } = useProjectDeviations(projectId)
 
   if (loading) {
     return (
@@ -53,6 +57,7 @@ export default function ProjectDetailsPage() {
       case 'completed': return 'bg-blue-100 text-blue-800'
       case 'on_hold': return 'bg-yellow-100 text-yellow-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
+      case 'blocked': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -63,6 +68,7 @@ export default function ProjectDetailsPage() {
       case 'completed': return 'Concluído'
       case 'on_hold': return 'Em Pausa'
       case 'cancelled': return 'Cancelado'
+      case 'blocked': return 'Bloqueado'
       default: return 'Desconhecido'
     }
   }
@@ -97,10 +103,16 @@ export default function ProjectDetailsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="details" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="details">Detalhes</TabsTrigger>
               <TabsTrigger value="strategic">Estratégico</TabsTrigger>
               <TabsTrigger value="schedule">Cronograma</TabsTrigger>
+              <TabsTrigger value="deviations" className="relative">
+                Desvios
+                {hasImpediments && (
+                  <AlertTriangle className="h-3 w-3 text-red-500 absolute -top-1 -right-1" />
+                )}
+              </TabsTrigger>
               <TabsTrigger value="comments">Comentários</TabsTrigger>
               <TabsTrigger value="attachments">Anexos</TabsTrigger>
             </TabsList>
@@ -117,6 +129,7 @@ export default function ProjectDetailsPage() {
                     project.status === 'active' ? 'bg-green-100 text-green-800' :
                     project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
                     project.status === 'on_hold' ? 'bg-yellow-100 text-yellow-800' :
+                    project.status === 'blocked' ? 'bg-red-100 text-red-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
                     {getStatusText(project.status)}
@@ -185,27 +198,25 @@ export default function ProjectDetailsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">
-                    {project.tasks?.length || 0}
+                    {project.total_tasks || 0}
                   </div>
                   <div className="text-sm text-blue-600">Total de Tarefas</div>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
-                    {project.tasks?.filter(task => task.status === 'completed').length || 0}
+                    {project.completed_tasks || 0}
                   </div>
                   <div className="text-sm text-green-600">Concluídas</div>
                 </div>
                 <div className="text-center p-4 bg-yellow-50 rounded-lg">
                   <div className="text-2xl font-bold text-yellow-600">
-                    {(project.tasks?.length || 0) - (project.tasks?.filter(task => task.status === 'completed').length || 0)}
+                    {(project.total_tasks || 0) - (project.completed_tasks || 0)}
                   </div>
                   <div className="text-sm text-yellow-600">Pendentes</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
                   <div className="text-2xl font-bold text-purple-600">
-                    {(project.tasks?.length || 0) > 0
-                      ? Math.round(((project.tasks?.filter(task => task.status === 'completed').length || 0) / (project.tasks?.length || 1)) * 100)
-                      : 0}%
+                    {project.progress_percentage || 0}%
                   </div>
                   <div className="text-sm text-purple-600">Progresso</div>
                 </div>
@@ -213,7 +224,16 @@ export default function ProjectDetailsPage() {
             </div>
           </div>
 
-
+          {/* Alerta de Impedimentos */}
+          {hasImpediments && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong>Atenção:</strong> Este projeto possui desvios impeditivos ativos que podem estar impactando o andamento.
+                Verifique a aba &quot;Desvios&quot; para mais detalhes.
+              </AlertDescription>
+            </Alert>
+          )}
         </TabsContent>
 
         {/* Aba Estratégico */}
@@ -224,6 +244,15 @@ export default function ProjectDetailsPage() {
         {/* Aba Cronograma */}
         <TabsContent value="schedule">
           <ProjectSchedule projectId={projectId} />
+        </TabsContent>
+
+        {/* Aba Desvios */}
+        <TabsContent value="deviations">
+          <DeviationList 
+            projectId={projectId} 
+            deviations={deviations} 
+            onRefresh={refetchDeviations} 
+          />
         </TabsContent>
 
         {/* Aba Comentários */}

@@ -29,7 +29,9 @@ export function useUsers() {
 
       const url = `/api/users${searchParams.toString() ? '?' + searchParams.toString() : ''}`
       
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        credentials: 'include'
+      })
       
       if (!response.ok) {
         throw new Error('Erro ao buscar usuários')
@@ -56,6 +58,7 @@ export function useUsers() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
+        credentials: 'include'
       })
       
       const result = await response.json()
@@ -90,6 +93,7 @@ export function useUsers() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
+        credentials: 'include'
       })
       
       const result = await response.json()
@@ -123,6 +127,7 @@ export function useUsers() {
 
       const response = await fetch(`/api/users/${userId}`, {
         method: 'DELETE',
+        credentials: 'include'
       })
       
       const result = await response.json()

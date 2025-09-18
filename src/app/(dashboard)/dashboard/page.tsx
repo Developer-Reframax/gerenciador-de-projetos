@@ -450,9 +450,6 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2 ml-4">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={project.owner.avatar_url || undefined} />
-                      <AvatarFallback>
-                        {project.owner.full_name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                      </AvatarFallback>
                     </Avatar>
                   </div>
                 </div>

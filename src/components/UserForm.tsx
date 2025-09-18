@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,10 +23,35 @@ export function UserForm({ isOpen, onClose, onSubmit, user, loading = false }: U
     email: user?.email || '',
     full_name: user?.full_name || '',
     role: (user?.role as "user" | "admin" | "editor" | "membro") || 'user',
-    // timezone: 'America/Sao_Paulo' // Removed - not available in current schema
+    bio: user?.bio || '',
+    timezone: user?.timezone || 'America/Sao_Paulo',
+    language: user?.language || 'pt-BR'
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Atualiza o formData quando o prop user mudar
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        email: user.email || '',
+        full_name: user.full_name || '',
+        role: (user.role as "user" | "admin" | "editor" | "membro") || 'user',
+        bio: user.bio || '',
+        timezone: user.timezone || 'America/Sao_Paulo',
+        language: user.language || 'pt-BR'
+      })
+    } else {
+      setFormData({
+        email: '',
+        full_name: '',
+        role: 'user',
+        bio: '',
+        timezone: 'America/Sao_Paulo',
+        language: 'pt-BR'
+      })
+    }
+  }, [user])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}

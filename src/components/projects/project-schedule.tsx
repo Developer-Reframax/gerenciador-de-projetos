@@ -819,7 +819,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
                     <SelectValue placeholder="Selecionar responsável" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sem responsável</SelectItem>
+                    <SelectItem value="unassigned">Sem responsável</SelectItem>
                     {teamMembers.map((member) => (
                       <SelectItem key={member.user_id} value={member.user_id}>
                         {member.user?.full_name || member.user?.email}
