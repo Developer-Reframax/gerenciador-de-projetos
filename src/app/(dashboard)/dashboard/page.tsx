@@ -11,7 +11,6 @@ import {
   Users,
   Clock,
   CheckCircle,
-  Plus,
   FolderKanban,
   Activity,
   Loader2
@@ -119,20 +118,6 @@ const getQuickActions = (onCreateProject: () => void) => [
     icon: Users,
     href: "/teams/invite",
     color: "bg-green-500 hover:bg-green-600"
-  },
-  {
-    title: "Ver Kanban",
-    description: "Acessar o quadro Kanban dos projetos",
-    icon: FolderKanban,
-    href: "/kanban",
-    color: "bg-purple-500 hover:bg-purple-600"
-  },
-  {
-    title: "Cronograma Gantt",
-    description: "Visualizar cronograma dos projetos",
-    icon: Calendar,
-    href: "/gantt",
-    color: "bg-orange-500 hover:bg-orange-600"
   }
 ]
 
@@ -271,10 +256,6 @@ export default function DashboardPage() {
             Bem-vindo de volta! Aqui está um resumo dos seus projetos.
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Projeto
-        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -313,7 +294,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 grid-cols-1">
               {quickActions.map((action: QuickAction, index: number) => {
                 const Icon = action.icon
                 return (

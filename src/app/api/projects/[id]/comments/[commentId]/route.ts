@@ -139,40 +139,68 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateCommentSchema.parse(body)
 
-    // Verificar se o comentário existe e pertence ao usuário ou se o usuário é admin
-    const { data: comment, error: commentError } = await supabase
+    // Debug: Log dos parâmetros recebidos
+    console.log('DELETE Comment - Params:', { projectId, commentId, userId: user.id })
+
+    // Primeiro, verificar se o comentário existe
+    const { data: commentCheck, error: commentCheckError } = await supabase
       .from('comments')
-      .select(`
-        id,
-        author_id,
-        content,
-        context_id,
-        projects!inner(
-          id,
-          team:teams!inner(
-            id,
-            team_members!inner(
-              user_id,
-              role
-            )
-          )
-        )
-      `)
+      .select('id, author_id, context, context_id')
       .eq('id', commentId)
-      .eq('context', 'project')
-      .eq('context_id', projectId)
       .single()
 
-    if (commentError || !comment) {
+    console.log('DELETE Comment - Comment check:', { commentCheck, commentCheckError })
+
+    if (commentCheckError || !commentCheck) {
+      console.log('DELETE Comment - Comentário não encontrado na primeira consulta')
       return NextResponse.json(
         { error: 'Comentário não encontrado' },
         { status: 404 }
       )
     }
 
+    // Verificar se o comentário pertence ao projeto correto
+    if (commentCheck.context !== 'project' || commentCheck.context_id !== projectId) {
+      console.log('DELETE Comment - Comentário não pertence ao projeto:', {
+        commentContext: commentCheck.context,
+        commentContextId: commentCheck.context_id,
+        expectedProjectId: projectId
+      })
+      return NextResponse.json(
+        { error: 'Comentário não encontrado' },
+        { status: 404 }
+      )
+    }
+
+    // Buscar informações do projeto separadamente
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select(`
+        id,
+        team:teams!inner(
+          id,
+          team_members!inner(
+            user_id,
+            role
+          )
+        )
+      `)
+      .eq('id', projectId)
+      .single()
+
+    console.log('DELETE Comment - Project query result:', { project, projectError })
+
+    if (projectError || !project) {
+      console.log('DELETE Comment - Projeto não encontrado:', projectError)
+      return NextResponse.json(
+        { error: 'Projeto não encontrado' },
+        { status: 404 }
+      )
+    }
+
     // Verificar permissões (autor do comentário ou admin da equipe)
-    const isAuthor = comment.author_id === user.id
-    const isTeamAdmin = (comment as CommentWithProject).projects?.team?.team_members?.some(
+    const isAuthor = commentCheck.author_id === user.id
+    const isTeamAdmin = project.team?.team_members?.some(
       (member: { user_id: string; role: string }) => member.user_id === user.id && member.role === 'admin'
     ) || false
 
@@ -281,7 +309,40 @@ export async function DELETE(
       )
     }
 
-    // Verificar se o comentário existe e pertence ao usuário ou se o usuário é admin
+    // Debug: Log dos parâmetros recebidos
+    console.log('DELETE Comment - Params:', { projectId, commentId, userId: user.id })
+
+    // Primeiro, verificar se o comentário existe
+    const { data: commentCheck, error: commentCheckError } = await supabase
+      .from('comments')
+      .select('id, author_id, context, context_id')
+      .eq('id', commentId)
+      .single()
+
+    console.log('DELETE Comment - Comment check:', { commentCheck, commentCheckError })
+
+    if (commentCheckError || !commentCheck) {
+      console.log('DELETE Comment - Comentário não encontrado na primeira consulta')
+      return NextResponse.json(
+        { error: 'Comentário não encontrado' },
+        { status: 404 }
+      )
+    }
+
+    // Verificar se o comentário pertence ao projeto correto
+    if (commentCheck.context !== 'project' || commentCheck.context_id !== projectId) {
+      console.log('DELETE Comment - Comentário não pertence ao projeto:', {
+        commentContext: commentCheck.context,
+        commentContextId: commentCheck.context_id,
+        expectedProjectId: projectId
+      })
+      return NextResponse.json(
+        { error: 'Comentário não encontrado' },
+        { status: 404 }
+      )
+    }
+
+    // Agora buscar com as informações da equipe
     const { data: comment, error: commentError } = await supabase
       .from('comments')
       .select(`
@@ -305,7 +366,10 @@ export async function DELETE(
       .eq('context_id', projectId)
       .single()
 
+    console.log('DELETE Comment - Full query result:', { comment, commentError })
+
     if (commentError || !comment) {
+      console.log('DELETE Comment - Erro na consulta completa:', commentError)
       return NextResponse.json(
         { error: 'Comentário não encontrado' },
         { status: 404 }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient, createRouteHandlerClient } from '../../../../../lib/supabase-server';
 import { cookies } from 'next/headers';
-import type { KanbanApiResponse } from '../../../../../../shared/types/kanban';
+import type { KanbanApiResponse } from '@/types/kanban';
 
 /**
  * GET /api/kanban/project/list

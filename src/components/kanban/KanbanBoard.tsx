@@ -7,7 +7,7 @@ import type {
   KanbanTask,
   KanbanProject,
   KanbanData
-} from '../../../shared/types/kanban';
+} from '@/types/kanban';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 interface KanbanBoardProps {

@@ -2,7 +2,7 @@ import React from 'react';
 import type {
   KanbanTask,
   KanbanProject
-} from '../../../shared/types/kanban';
+} from '@/types/kanban';
 import {
   X,
   Calendar,

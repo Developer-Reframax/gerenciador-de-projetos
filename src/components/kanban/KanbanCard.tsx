@@ -5,7 +5,7 @@ import type {
   KanbanTask,
   KanbanProject,
   KanbanViewType
-} from '../../../shared/types/kanban.js';
+} from '@/types/kanban';
 import {
   Calendar,
   User,

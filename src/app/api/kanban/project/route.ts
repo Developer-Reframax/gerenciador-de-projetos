@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '../../../../lib/supabase-server';
-import type { KanbanProjectData, KanbanApiResponse } from '../../../../../shared/types/kanban';
+import type { KanbanProjectData, KanbanApiResponse } from '@/types/kanban';
 
 const supabase = createServiceRoleClient();
 

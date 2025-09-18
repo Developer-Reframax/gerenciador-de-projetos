@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus, Search, Users as UsersIcon, UserCheck, UserX, Shield, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,19 +24,41 @@ import type { User } from '@/types'
 export default function UsersPage() {
   const { user: currentUser } = useAuth()
   const { users, loading, error, createUser, updateUser, deleteUser, toggleUserStatus, fetchUsers } = useUsers()
-  // const { stats, loading: statsLoading } = useUserStats() // TODO: Implementar useUserStats
-  const stats = {
-    total: 0,
-    active: 0,
-    inactive: 0,
-    by_role: {
-      admin: 0,
-      editor: 0,
-      membro: 0,
-      user: 0
+  
+  // Calcular estatísticas dinamicamente baseado nos usuários carregados
+  const stats = useMemo(() => {
+    if (!users || users.length === 0) {
+      return {
+        total: 0,
+        active: 0,
+        inactive: 0,
+        by_role: {
+          admin: 0,
+          editor: 0,
+          membro: 0,
+          user: 0
+        }
+      }
     }
-  }
-  const statsLoading = false
+
+    const total = users.length
+    const active = users.filter(user => user.is_active === true).length
+    const inactive = users.filter(user => user.is_active === false).length
+    const adminCount = users.filter(user => user.role === 'admin').length
+    const userCount = users.filter(user => user.role === 'user').length
+
+    return {
+      total,
+      active,
+      inactive,
+      by_role: {
+        admin: adminCount,
+        user: userCount
+      }
+    }
+  }, [users])
+  
+  const statsLoading = loading
   
   const [filters, setFilters] = useState<UserFilters>({
     search: '',
@@ -199,8 +221,6 @@ export default function UsersPage() {
               <SelectContent>
                 <SelectItem value="all">Todas as funções</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="editor">Editor</SelectItem>
-                <SelectItem value="membro">Membro</SelectItem>
                 <SelectItem value="user">Usuário</SelectItem>
               </SelectContent>
             </Select>

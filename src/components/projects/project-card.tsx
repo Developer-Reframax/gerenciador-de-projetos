@@ -73,10 +73,10 @@ export function ProjectCard({ project, onEdit, onDelete, onRefetch }: ProjectCar
     <Card className="hover:shadow-md transition-shadow duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg truncate">{project.name}</h3>
+          <div className="flex-1 min-w-0 pr-2">
+            <h3 className="font-semibold text-lg break-words leading-tight">{project.name}</h3>
             {project.description && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              <p className="text-sm text-muted-foreground mt-1 break-words line-clamp-3 leading-relaxed">
                 {project.description}
               </p>
             )}

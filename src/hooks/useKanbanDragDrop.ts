@@ -18,7 +18,7 @@ import type {
   KanbanProjectData,
   KanbanAssigneeData,
   KanbanProjectStatusData
-} from '../../shared/types/kanban.js';
+} from '@/types/kanban';
 
 // Definir DragDropState localmente
 type DragDropState = {

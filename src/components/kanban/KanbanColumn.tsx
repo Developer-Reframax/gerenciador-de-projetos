@@ -7,7 +7,7 @@ import type {
   KanbanViewType,
   KanbanTask,
   KanbanProject
-} from '../../../shared/types/kanban';
+} from '@/types/kanban';
 import { Plus, MoreVertical } from 'lucide-react';
 
 interface KanbanColumnProps {

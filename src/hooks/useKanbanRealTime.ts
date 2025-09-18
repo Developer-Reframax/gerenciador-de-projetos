@@ -9,7 +9,7 @@ import type {
   KanbanProjectData,
   KanbanAssigneeData,
   KanbanProjectStatusData
-} from '../../shared/types/kanban.js';
+} from '@/types/kanban';
 
 type RealtimeNotification = {
   type: string;

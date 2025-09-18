@@ -66,7 +66,7 @@ export function TeamCard({ team, onEdit, onDelete, showActions = true }: TeamCar
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg font-semibold truncate">
+              <CardTitle className="text-lg font-semibold break-words leading-tight">
                 {team.name}
               </CardTitle>
               <div className="flex items-center space-x-2 mt-1">

@@ -6,7 +6,7 @@ import type {
   KanbanProject,
   KanbanApiResponse,
   KanbanData
-} from '../../shared/types/kanban.js';
+} from '@/types/kanban';
 
 interface UseKanbanDataProps {
   viewType: KanbanViewType;
