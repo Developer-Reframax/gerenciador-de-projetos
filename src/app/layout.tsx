@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gerenciador de Projetos",
-  description: "Sistema completo de gerenciamento de projetos e equipes",
+  title: "Hub Max IT Project",
+  description: "Sistema de gerenciamento de projetos",
 };
 
 export default function RootLayout({

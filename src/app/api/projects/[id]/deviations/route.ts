@@ -167,7 +167,7 @@ export async function POST(
       requested_by: body.was_requested ? body.requested_by : null,
       evaluation_criteria: body.evaluation_criteria,
       impact_type: body.impact_type,
-      generates_impediment: body.is_impediment || false,
+      generates_impediment: body.generates_impediment || false,
       requires_approval: body.requires_approval || false,
       approver_id: body.requires_approval ? body.approver_id : null,
       status: 'Pendente',
