@@ -15,11 +15,30 @@ export async function GET() {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Buscar projetos do usuário
+    // Buscar equipes onde o usuário é membro
+    const { data: teamMembers, error: teamMembersError } = await supabase
+      .from('team_members')
+      .select('team_id')
+      .eq('user_id', user.id)
+
+    if (teamMembersError) {
+      console.error('Erro ao buscar team_members:', teamMembersError)
+      return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
+    }
+
+    // Se o usuário não faz parte de nenhuma equipe, retornar lista vazia
+    if (!teamMembers || teamMembers.length === 0) {
+      return NextResponse.json({ projects: [] })
+    }
+
+    // Extrair os team_ids
+    const teamIds = teamMembers.map(tm => tm.team_id)
+
+    // Buscar projetos das equipes onde o usuário é membro
     const { data: projects, error } = await supabase
       .from('projects')
       .select('*')
-      .eq('owner_id', user.id)
+      .in('team_id', teamIds)
       .order('created_at', { ascending: false })
 
     if (error) {

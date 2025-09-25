@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Comment, COMMENT_TYPE_CONFIG } from '@/types/comment'
+import { Comment, CommentType, COMMENT_TYPE_CONFIG } from '@/types/comment'
 import { CommentForm } from './comment-form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -29,12 +29,13 @@ import { cn } from '@/lib/utils'
 
 interface CommentItemProps {
   comment: Comment
-  onUpdate: (commentId: string, content: string) => Promise<void>
+  onUpdate: (commentId: string, content: string, mentionedUsers?: string[]) => Promise<void>
   onDelete: (commentId: string) => Promise<void>
   onReply?: () => void
   currentUserId?: string
   showReplyButton?: boolean
   isReply?: boolean
+  projectId: string
 }
 
 export function CommentItem({
@@ -44,7 +45,8 @@ export function CommentItem({
   onReply,
   currentUserId,
   showReplyButton = true,
-  isReply = false
+  isReply = false,
+  projectId
 }: CommentItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -54,8 +56,8 @@ export function CommentItem({
   const isAuthor = currentUserId === comment.author_id
   const typeConfig = COMMENT_TYPE_CONFIG[comment.type]
 
-  const handleUpdate = async (content: string) => {
-    await onUpdate(comment.id, content)
+  const handleUpdate = async (content: string, type?: CommentType, mentionedUsers?: string[]) => {
+    await onUpdate(comment.id, content, mentionedUsers)
     setIsEditing(false)
   }
 
@@ -86,6 +88,41 @@ export function CommentItem({
     })
   }
 
+  // Função para renderizar conteúdo com menções destacadas
+  const renderContentWithMentions = (content: string) => {
+    const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g
+    const parts = []
+    let lastIndex = 0
+    let match
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+      // Adiciona texto antes da menção
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index))
+      }
+      
+      // Adiciona a menção como badge
+      parts.push(
+        <Badge 
+          key={`mention-${match.index}`}
+          variant="secondary" 
+          className="mx-1 bg-blue-100 text-blue-800 hover:bg-blue-200"
+        >
+          @{match[1]}
+        </Badge>
+      )
+      
+      lastIndex = match.index + match[0].length
+    }
+    
+    // Adiciona texto restante
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex))
+    }
+    
+    return parts.length > 1 ? parts : content
+  }
+
   if (isEditing) {
     return (
       <div className={cn(
@@ -98,6 +135,8 @@ export function CommentItem({
           onCancel={() => setIsEditing(false)}
           placeholder="Edite seu comentário..."
           submitLabel="Salvar"
+          projectId={projectId}
+          showTypeSelector={false}
         />
       </div>
     )
@@ -176,7 +215,7 @@ export function CommentItem({
 
         {/* Conteúdo do comentário */}
         <div className="text-sm leading-relaxed whitespace-pre-wrap">
-          {comment.content}
+          {renderContentWithMentions(comment.content)}
         </div>
 
         {/* Ações do comentário */}

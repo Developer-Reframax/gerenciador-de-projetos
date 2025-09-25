@@ -34,14 +34,29 @@ export async function GET(
     }
 
     // Verificar se o usuário é o proprietário ou membro da equipe
-    const { data: collaborator } = await supabase
-      .from('project_collaborators')
-      .select('id')
-      .eq('project_id', projectId)
-      .eq('user_id', user.id)
-      .single()
+    let hasAccess = project.owner_id === user.id
 
-    const hasAccess = project.owner_id === user.id || collaborator
+    if (!hasAccess) {
+      // Buscar os team_ids do usuário
+      const { data: userTeams } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
+
+      if (userTeams && userTeams.length > 0) {
+        const teamIds = userTeams.map(team => team.team_id)
+        
+        // Verificar se o projeto pertence a alguma das equipes do usuário
+        const { data: projectTeam } = await supabase
+          .from('projects')
+          .select('team_id')
+          .eq('id', projectId)
+          .in('team_id', teamIds)
+          .single()
+
+        hasAccess = !!projectTeam
+      }
+    }
 
     if (!hasAccess) {
       return NextResponse.json(
@@ -142,14 +157,29 @@ export async function POST(
     }
 
     // Verificar se o usuário é o proprietário ou membro da equipe
-    const { data: collaborator } = await supabase
-      .from('project_collaborators')
-      .select('id')
-      .eq('project_id', projectId)
-      .eq('user_id', user.id)
-      .single()
+    let hasAccess = project.owner_id === user.id
 
-    const hasAccess = project.owner_id === user.id || collaborator
+    if (!hasAccess) {
+      // Buscar os team_ids do usuário
+      const { data: userTeams } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
+
+      if (userTeams && userTeams.length > 0) {
+        const teamIds = userTeams.map(team => team.team_id)
+        
+        // Verificar se o projeto pertence a alguma das equipes do usuário
+        const { data: projectTeam } = await supabase
+          .from('projects')
+          .select('team_id')
+          .eq('id', projectId)
+          .in('team_id', teamIds)
+          .single()
+
+        hasAccess = !!projectTeam
+      }
+    }
 
     if (!hasAccess) {
       return NextResponse.json(

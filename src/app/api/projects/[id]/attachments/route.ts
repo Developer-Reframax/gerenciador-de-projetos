@@ -29,6 +29,7 @@ export async function GET(
         file_size,
         mime_type,
         file_type,
+        description,
         created_at,
         uploaded_by,
         users!uploaded_by(full_name, email)
@@ -66,9 +67,14 @@ export async function POST(
 
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const description = formData.get('description') as string
 
     if (!file) {
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 })
+    }
+
+    if (!description || description.trim() === '') {
+      return NextResponse.json({ error: 'Descrição é obrigatória' }, { status: 400 })
     }
 
     // Validar tamanho do arquivo
@@ -115,7 +121,8 @@ export async function POST(
         file_path: filePath,
         file_size: file.size,
         mime_type: file.type || 'application/octet-stream',
-        file_type: getFileType(file.type || 'application/octet-stream')
+        file_type: getFileType(file.type || 'application/octet-stream'),
+        description: description.trim()
       })
       .select(`
         id,
@@ -124,6 +131,7 @@ export async function POST(
         file_size,
         mime_type,
         file_type,
+        description,
         created_at,
         uploaded_by,
         users!uploaded_by(full_name, email)

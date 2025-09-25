@@ -170,27 +170,27 @@ export function KanbanCreateModal({
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50" onClick={onClose} />
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               {itemType === 'task' ? (
                 <CheckCircle className="h-6 w-6 text-blue-600" />
               ) : (
                 <Folder className="h-6 w-6 text-green-600" />
               )}
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {itemType === 'task' ? 'Nova Tarefa' : 'Novo Projeto'}
               </h2>
             </div>
             
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -199,7 +199,7 @@ export function KanbanCreateModal({
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
             {errors.general && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
                 {errors.general}
               </div>
             )}
@@ -224,12 +224,12 @@ export function KanbanCreateModal({
           </form>
           
           {/* Footer */}
-          <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
             <button
               type="button"
               onClick={onClose}
               disabled={isCreating}
-              className="px-4 py-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -289,33 +289,33 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
     <div className="space-y-6">
       {/* Título */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Título *
         </label>
         <input
           type="text"
           value={(formData as Partial<KanbanTask>).title || ''}
           onChange={(e) => onChange('title', e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-            errors.title ? 'border-red-300' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+            errors.title ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
           }`}
           placeholder="Digite o título da tarefa"
         />
         {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
         )}
       </div>
       
       {/* Descrição */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Descrição
         </label>
         <textarea
           value={formData.description || ''}
           onChange={(e) => onChange('description', e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Descreva os detalhes da tarefa..."
         />
       </div>
@@ -324,15 +324,15 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Projeto */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Folder className="inline h-4 w-4 mr-1" />
             Projeto *
           </label>
           <select
             value={(formData as Partial<KanbanTask>).project_id || ''}
             onChange={(e) => onChange('project_id', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.project_id ? 'border-red-300' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+              errors.project_id ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
             }`}
           >
             <option value="">Selecionar projeto</option>
@@ -343,20 +343,20 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
             ))}
           </select>
           {errors.project_id && (
-            <p className="mt-1 text-sm text-red-600">{errors.project_id}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.project_id}</p>
           )}
         </div>
         
         {/* Responsável */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <User className="inline h-4 w-4 mr-1" />
             Responsável
           </label>
           <select
             value={(formData as Partial<KanbanTask>).assigned_to || ''}
             onChange={(e) => onChange('assigned_to', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             <option value="">Não atribuído</option>
             {availableUsers.map((user) => (
@@ -369,13 +369,13 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
         
         {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Status
           </label>
           <select
             value={formData.status || 'todo'}
             onChange={(e) => onChange('status', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -387,14 +387,14 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
         
         {/* Prioridade */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Flag className="inline h-4 w-4 mr-1" />
             Prioridade
           </label>
           <select
             value={formData.priority || 'medium'}
             onChange={(e) => onChange('priority', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             {priorityOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -406,7 +406,7 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
         
         {/* Data de vencimento */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Calendar className="inline h-4 w-4 mr-1" />
             Data de Vencimento
           </label>
@@ -414,20 +414,20 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
             type="date"
             value={(formData as Partial<KanbanTask>).due_date || ''}
             onChange={(e) => onChange('due_date', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
         
         {/* Estimativa */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Clock className="inline h-4 w-4 mr-1" />
             Estimativa (horas)
           </label>
           <input
             type="text"
             placeholder="Estimativa de horas (opcional)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
             disabled
           />
 
@@ -467,33 +467,33 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
     <div className="space-y-6">
       {/* Nome */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Nome do Projeto *
         </label>
         <input
           type="text"
           value={(formData as Partial<KanbanProject>).name || ''}
           onChange={(e) => onChange('name', e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-            errors.name ? 'border-red-300' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+            errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
           }`}
           placeholder="Digite o nome do projeto"
         />
         {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
         )}
       </div>
       
       {/* Descrição */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Descrição
         </label>
         <textarea
           value={formData.description || ''}
           onChange={(e) => onChange('description', e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Descreva os objetivos e escopo do projeto..."
         />
       </div>
@@ -502,16 +502,14 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Equipe */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Users className="inline h-4 w-4 mr-1" />
             Equipe *
           </label>
           <select
             value={(formData as Partial<KanbanProject>).team_name || ''}
             onChange={(e) => onChange('team_name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              'border-gray-300'
-            }`}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             <option value="">Selecionar equipe</option>
             {availableTeams.map((team) => (
@@ -525,14 +523,14 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
         
         {/* Gerente */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <User className="inline h-4 w-4 mr-1" />
             Gerente
           </label>
           <select
             value=""
             onChange={() => {}}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
             disabled
           >
             <option value="">Não atribuído</option>
@@ -546,13 +544,13 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
         
         {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Status
           </label>
           <select
             value={formData.status || 'planning'}
             onChange={(e) => onChange('status', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -564,14 +562,14 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
         
         {/* Prioridade */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Flag className="inline h-4 w-4 mr-1" />
             Prioridade
           </label>
           <select
             value={formData.priority || 'medium'}
             onChange={(e) => onChange('priority', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             {priorityOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -583,7 +581,7 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
         
         {/* Data de início */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Calendar className="inline h-4 w-4 mr-1" />
             Data de Início
           </label>
@@ -591,13 +589,13 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
             type="date"
             value={(formData as Partial<KanbanProject>).start_date || ''}
             onChange={(e) => onChange('start_date', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
         
         {/* Data de fim */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Calendar className="inline h-4 w-4 mr-1" />
             Data de Fim
           </label>
@@ -605,12 +603,12 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
             type="date"
             value={(formData as Partial<KanbanProject>).end_date || ''}
             onChange={(e) => onChange('end_date', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.end_date ? 'border-red-300' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+              errors.end_date ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
             }`}
           />
           {errors.end_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.end_date}</p>
           )}
         </div>
       </div>

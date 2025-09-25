@@ -61,7 +61,7 @@ export default function LoginPage() {
       
       {/* Content */}
       <div className="relative z-10 w-full max-w-md px-4 sm:px-6 lg:px-8">
-        <Card className="w-full backdrop-blur-sm bg-white/95 shadow-2xl border-0">
+        <Card className="w-full backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-2xl border-0">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
             Entrar na sua conta
@@ -124,7 +124,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <Link 
                 href="/forgot-password" 
-                className="text-sm text-blue-600 hover:text-blue-500"
+                className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Esqueceu a senha?
               </Link>
@@ -147,15 +147,7 @@ export default function LoginPage() {
               )}
             </Button>
             
-            <div className="text-center text-sm">
-              Não tem uma conta?{' '}
-              <Link 
-                href="/signup" 
-                className="text-blue-600 hover:text-blue-500 font-medium"
-              >
-                Criar conta
-              </Link>
-            </div>
+
           </CardFooter>
         </form>
         </Card>

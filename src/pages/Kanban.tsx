@@ -137,23 +137,23 @@ export function Kanban() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-gray-200 bg-white px-6 py-4">
+      <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900">Kanban</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kanban</h1>
             
             {/* Status da conexão em tempo real */}
             <div className="flex items-center space-x-2 text-sm">
               <div className={`w-2 h-2 rounded-full ${
                 isConnected ? 'bg-green-500' : 'bg-red-500'
               }`} />
-              <span className="text-gray-600">
+              <span className="text-gray-600 dark:text-gray-300">
                 {isConnected ? 'Conectado' : 'Desconectado'}
               </span>
               {lastUpdate && (
-                <span className="text-gray-500">
+                <span className="text-gray-500 dark:text-gray-400">
                   • Última atualização: {lastUpdate.toLocaleTimeString()}
                 </span>
               )}
@@ -165,7 +165,7 @@ export function Kanban() {
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               title="Atualizar dados"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

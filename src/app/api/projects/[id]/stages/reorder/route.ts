@@ -35,7 +35,7 @@ export async function PUT(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -57,15 +57,16 @@ export async function PUT(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id, role')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = Boolean(collaborator && collaborator.role && ['admin', 'editor'].includes(collaborator.role))
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {
@@ -76,9 +77,9 @@ export async function PUT(
     }
 
     // Update stage positions
-    const updates = stages.map((stage: { id: string; position: number }) => ({
+    const updates = stages.map((stage: { id: string; position?: number; order_index?: number }) => ({
       id: stage.id,
-      position: stage.position
+      position: stage.order_index ?? stage.position // Map order_index to position
     }))
 
     // Use a transaction to update all stages at once

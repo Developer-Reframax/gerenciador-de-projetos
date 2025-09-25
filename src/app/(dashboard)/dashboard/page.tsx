@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-  Calendar,
   Users,
   Clock,
   CheckCircle,
@@ -412,7 +411,9 @@ export default function DashboardPage() {
                          project.status === "completed" ? "Concluído" : 
                          project.status === "planning" ? "Planejamento" :
                          project.status === "on_hold" ? "Pausado" :
-                         project.status === "cancelled" ? "Cancelado" : "Desconhecido"}
+                         project.status === "cancelled" ? "Cancelado" :
+                         project.status === "archived" ? "Arquivado" :
+                         project.status === "blocked" ? "Bloqueado" : "Desconhecido"}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{project.description}</p>

@@ -3,6 +3,7 @@ import { supabase } from './supabase-client'
 class ApiClient {
   private sessionCache: { session: { access_token?: string } | null; timestamp: number } | null = null
   private readonly CACHE_DURATION = 30000 // 30 segundos
+  private readonly baseURL = '/api'
   
   private async getAuthHeaders(): Promise<HeadersInit> {
     const headers: HeadersInit = {
@@ -42,14 +43,21 @@ class ApiClient {
 
   async request<T = unknown>(
     url: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isFormData: boolean = false
   ): Promise<T> {
     const headers = await this.getAuthHeaders()
+    const fullUrl = url.startsWith('/api') ? url : `${this.baseURL}${url}`
     
-    const response = await fetch(url, {
+    // Para FormData, não definir Content-Type para permitir boundary automático
+    const requestHeaders = isFormData 
+      ? { Authorization: (headers as Record<string, string>)['Authorization'] }
+      : headers
+    
+    const response = await fetch(fullUrl, {
       ...options,
       headers: {
-        ...headers,
+        ...requestHeaders,
         ...options.headers,
       },
     })
@@ -66,11 +74,12 @@ class ApiClient {
     return this.request<T>(url, { method: 'GET' })
   }
 
-  async post<T = unknown>(url: string, data?: Record<string, unknown>): Promise<T> {
+  async post<T = unknown>(url: string, data?: Record<string, unknown> | FormData): Promise<T> {
+    const isFormData = data instanceof FormData
     return this.request<T>(url, {
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    })
+      body: isFormData ? data : (data ? JSON.stringify(data) : undefined),
+    }, isFormData)
   }
 
   async put<T = unknown>(url: string, data?: Record<string, unknown>): Promise<T> {

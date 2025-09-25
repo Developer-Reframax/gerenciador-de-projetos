@@ -14,10 +14,11 @@ interface CommentListProps {
   comments: Comment[]
   loading: boolean
   error: string | null
-  onCreateComment: (content: string, parentId?: string) => Promise<void>
-  onUpdateComment: (commentId: string, content: string) => Promise<void>
+  onCreateComment: (content: string, parentId?: string, mentionedUsers?: string[]) => Promise<void>
+  onUpdateComment: (commentId: string, content: string, mentionedUsers?: string[]) => Promise<void>
   onDeleteComment: (commentId: string) => Promise<void>
   currentUserId?: string
+  projectId: string
 }
 
 export function CommentList({
@@ -27,13 +28,14 @@ export function CommentList({
   onCreateComment,
   onUpdateComment,
   onDeleteComment,
-  currentUserId
+  currentUserId,
+  projectId
 }: CommentListProps) {
   const [showForm, setShowForm] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
-  const handleCreateComment = async (content: string, parentId?: string) => {
-    await onCreateComment(content, parentId)
+  const handleCreateComment = async (content: string, parentId?: string, mentionedUsers?: string[]) => {
+    await onCreateComment(content, parentId, mentionedUsers)
     setShowForm(false)
     setReplyingTo(null)
   }
@@ -113,10 +115,11 @@ export function CommentList({
         {showForm && (
           <div className="border rounded-lg p-4 bg-muted/50">
             <CommentForm
-              onSubmit={(content) => handleCreateComment(content)}
+              onSubmit={(content, type, mentionedUsers) => handleCreateComment(content, undefined, mentionedUsers)}
               onCancel={() => setShowForm(false)}
               placeholder="Escreva seu comentário..."
               submitLabel="Comentar"
+              projectId={projectId}
             />
           </div>
         )}
@@ -141,16 +144,18 @@ export function CommentList({
                   onReply={() => handleReply(comment.id)}
                   currentUserId={currentUserId}
                   showReplyButton={true}
+                  projectId={projectId}
                 />
                 
                 {/* Formulário de resposta */}
                 {replyingTo === comment.id && (
                   <div className="ml-8 border rounded-lg p-4 bg-muted/30">
                     <CommentForm
-                      onSubmit={(content) => handleCreateComment(content, comment.id)}
+                      onSubmit={(content, type, mentionedUsers) => handleCreateComment(content, comment.id, mentionedUsers)}
                       onCancel={handleCancelReply}
                       placeholder={`Respondendo a ${comment.author.user_metadata.full_name || comment.author.email}...`}
                       submitLabel="Responder"
+                      projectId={projectId}
                     />
                   </div>
                 )}
@@ -168,6 +173,7 @@ export function CommentList({
                         currentUserId={currentUserId}
                         showReplyButton={false}
                         isReply={true}
+                        projectId={projectId}
                       />
                     ))}
                   </div>

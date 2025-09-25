@@ -53,19 +53,21 @@ export async function GET(
       return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
     }
 
-    // Check if user has access to this project (owner or collaborator)
+    // Check if user has access to this project (owner or team member)
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = !!collaborator
+      if (teamMembers && teamMembers.length > 0) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        // Check if project's team is in user's teams
+        hasAccess = !!(project.team_id && userTeamIds.includes(project.team_id))
+      }
     }
 
     if (!hasAccess) {

@@ -24,7 +24,7 @@ export async function GET(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -171,7 +171,7 @@ export async function PUT(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -189,19 +189,19 @@ export async function PUT(
       )
     }
 
-    // Check if user has access to this project (owner or collaborator)
+    // Check if user has access to this project (owner or team member)
     let hasAccess = project.owner_id === user.id
 
-    if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
+    if (!hasAccess && project.team_id) {
+      const { data: teamMember } = await supabase
+        .from('team_members')
         .select('id')
-        .eq('project_id', id)
+        .eq('team_id', project.team_id)
         .eq('user_id', user.id)
         .eq('status', 'active')
         .single()
 
-      hasAccess = !!collaborator
+      hasAccess = !!teamMember
     }
 
     if (!hasAccess) {
@@ -260,21 +260,21 @@ export async function PUT(
 
       // Check if assigned user has access to the project
       const isOwner = project.owner_id === assignee_id
-      let isCollaborator = false
+      let isTeamMember = false
 
-      if (!isOwner) {
-        const { data: collaborator } = await supabase
-          .from('project_collaborators')
+      if (!isOwner && project.team_id) {
+        const { data: teamMember } = await supabase
+          .from('team_members')
           .select('id')
-          .eq('project_id', id)
+          .eq('team_id', project.team_id)
           .eq('user_id', assignee_id)
           .eq('status', 'active')
           .single()
 
-        isCollaborator = !!collaborator
+        isTeamMember = !!teamMember
       }
 
-      if (!isOwner && !isCollaborator) {
+      if (!isOwner && !isTeamMember) {
         return NextResponse.json(
           { error: 'Usuário atribuído não tem acesso ao projeto' },
           { status: 400 }
@@ -354,7 +354,7 @@ export async function DELETE(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -372,19 +372,19 @@ export async function DELETE(
       )
     }
 
-    // Check if user is owner or team member with write access
+    // Check if user is owner or team member
     let hasAccess = project.owner_id === user.id
 
-    if (!hasAccess) {
-      const { data: collaborator } = await supabase
-      .from('project_collaborators')
-        .select('id, role')
-        .eq('project_id', id)
+    if (!hasAccess && project.team_id) {
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('team_id', project.team_id)
         .eq('user_id', user.id)
         .eq('status', 'active')
         .single()
 
-      hasAccess = !!collaborator && !!collaborator.role && ['admin', 'editor'].includes(collaborator.role)
+      hasAccess = !!teamMember
     }
 
     if (!hasAccess) {

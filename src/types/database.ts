@@ -12,6 +12,7 @@ export type Database = {
       attachments: {
         Row: {
           created_at: string | null
+          description: string | null
           file_path: string
           file_size: number
           file_type: string | null
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
           file_path: string
           file_size: number
           file_type?: string | null
@@ -38,6 +40,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          description?: string | null
           file_path?: string
           file_size?: number
           file_type?: string | null
@@ -805,6 +808,60 @@ export type Database = {
           }
         ]
       }
+      impediments: {
+          Row: {
+            id: string
+            stage_id: string
+            description: string
+            identification_date: string
+            responsible_id: string
+            expected_resolution_date?: string
+            criticality: Database["public"]["Enums"]["impediment_criticality"]
+            status: Database["public"]["Enums"]["impediment_status"]
+            created_at?: string
+            updated_at?: string
+          }
+          Insert: {
+            id?: string
+            stage_id: string
+            description: string
+            identification_date: string
+            responsible_id: string
+            expected_resolution_date?: string
+            criticality?: Database["public"]["Enums"]["impediment_criticality"]
+            status?: Database["public"]["Enums"]["impediment_status"]
+            created_at?: string
+            updated_at?: string
+          }
+          Update: {
+            id?: string
+            stage_id?: string
+            description?: string
+            identification_date?: string
+            responsible_id?: string
+            expected_resolution_date?: string
+            criticality?: Database["public"]["Enums"]["impediment_criticality"]
+            status?: Database["public"]["Enums"]["impediment_status"]
+            created_at?: string
+            updated_at?: string
+          }
+        Relationships: [
+          {
+            foreignKeyName: "fk_impediments_stage"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_impediments_responsible"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       project_deviations: {
         Row: {
           id: string
@@ -872,6 +929,120 @@ export type Database = {
           {
             foreignKeyName: "project_deviations_approver_id_fkey"
             columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      project_logs: {
+        Row: {
+          id: string
+          project_id: string
+          table_name: string
+          record_id: string
+          action_type: "INSERT" | "UPDATE" | "DELETE"
+          user_id: string | null
+          created_at: string
+          old_data: Json | null
+          new_data: Json | null
+          description: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          table_name: string
+          record_id: string
+          action_type: "INSERT" | "UPDATE" | "DELETE"
+          user_id?: string | null
+          created_at?: string
+          old_data?: Json | null
+          new_data?: Json | null
+          description?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          table_name?: string
+          record_id?: string
+          action_type?: "INSERT" | "UPDATE" | "DELETE"
+          user_id?: string | null
+          created_at?: string
+          old_data?: Json | null
+          new_data?: Json | null
+          description?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      risks: {
+          Row: {
+            id: string
+            stage_id: string
+            name: string
+            description?: string
+            status: Database["public"]["Enums"]["risk_status"]
+            impact: Database["public"]["Enums"]["risk_impact"]
+            probability: Database["public"]["Enums"]["risk_probability"]
+            responsible_id: string
+            identification_date: string
+            expected_resolution_date?: string
+            created_at?: string
+            updated_at?: string
+          }
+          Insert: {
+            id?: string
+            stage_id: string
+            name: string
+            description?: string
+            status?: Database["public"]["Enums"]["risk_status"]
+            impact: Database["public"]["Enums"]["risk_impact"]
+            probability: Database["public"]["Enums"]["risk_probability"]
+            responsible_id: string
+            identification_date: string
+            expected_resolution_date?: string
+            created_at?: string
+            updated_at?: string
+          }
+          Update: {
+            id?: string
+            stage_id?: string
+            name?: string
+            description?: string
+            status?: Database["public"]["Enums"]["risk_status"]
+            impact?: Database["public"]["Enums"]["risk_impact"]
+            probability?: Database["public"]["Enums"]["risk_probability"]
+            responsible_id?: string
+            identification_date?: string
+            expected_resolution_date?: string
+            created_at?: string
+            updated_at?: string
+          }
+        Relationships: [
+          {
+            foreignKeyName: "fk_risks_stage"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_risks_responsible"
+            columns: ["responsible_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -1090,9 +1261,14 @@ export type Database = {
     Enums: {
       comment_context: "task" | "project" | "team"
       comment_type: "comment" | "status_change" | "assignment" | "mention" | "system"
+      impediment_criticality: "alta" | "media" | "baixa"
+      impediment_status: "aberto" | "em_resolucao" | "resolvido" | "cancelado"
       project_priority: "low" | "medium" | "high" | "urgent"
       project_role: "owner" | "admin" | "member" | "viewer"
       project_status: "planning" | "active" | "on_hold" | "completed" | "cancelled" | "blocked"
+      risk_impact: "prazo" | "custo" | "qualidade" | "reputacao"
+      risk_probability: "baixa" | "media" | "alta"
+      risk_status: "identificado" | "em_analise" | "em_mitigacao" | "monitorado" | "materializado" | "encerrado"
       task_priority: "low" | "medium" | "high" | "urgent"
       task_status: "todo" | "in_progress" | "review" | "blocked" | "completed" | "cancelled"
       team_role: "owner" | "admin" | "member"
@@ -1128,6 +1304,16 @@ export type UserUpdate = Database['public']['Tables']['users']['Update']
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
 export type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
+
+// Risk types
+export type Risk = Database['public']['Tables']['risks']['Row']
+export type RiskInsert = Database['public']['Tables']['risks']['Insert']
+export type RiskUpdate = Database['public']['Tables']['risks']['Update']
+
+// Impediment types
+export type Impediment = Database['public']['Tables']['impediments']['Row']
+export type ImpedimentInsert = Database['public']['Tables']['impediments']['Insert']
+export type ImpedimentUpdate = Database['public']['Tables']['impediments']['Update']
 
 // Tipos específicos para stakeholders
 export type StakeholderRole = 'sponsor' | 'stakeholder' | 'user' | 'decision_maker' | 'influencer'

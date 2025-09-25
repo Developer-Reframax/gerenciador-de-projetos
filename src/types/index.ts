@@ -31,6 +31,28 @@ export interface CreateTaskForm {
   assigned_to?: string
 }
 
+export interface CreateRiskForm {
+  name: string
+  description?: string
+  stage_id: string
+  status?: Database['public']['Enums']['risk_status']
+  impact: Database['public']['Enums']['risk_impact']
+  probability: Database['public']['Enums']['risk_probability']
+  responsible_id: string
+  identification_date: string
+  expected_resolution_date?: string
+}
+
+export interface CreateImpedimentForm {
+  description: string
+  stage_id: string
+  identification_date: string
+  responsible_id: string
+  expected_resolution_date?: string
+  criticality?: Database['public']['Enums']['impediment_criticality']
+  status?: Database['public']['Enums']['impediment_status']
+}
+
 // Tipos para componentes
 export interface ProjectCardProps {
   project: Database['public']['Tables']['projects']['Row']
@@ -43,6 +65,26 @@ export interface TaskCardProps {
   onEdit?: (task: Database['public']['Tables']['tasks']['Row']) => void
   onDelete?: (taskId: string) => void
   onStatusChange?: (taskId: string, status: 'todo' | 'in_progress' | 'completed') => void
+}
+
+export interface RiskCardProps {
+  risk: Database['public']['Tables']['risks']['Row'] & {
+    stage?: { id: string; name: string }
+    assigned_user?: { id: string; email: string; full_name: string; avatar_url?: string }
+  }
+  onEdit?: (risk: Database['public']['Tables']['risks']['Row']) => void
+  onDelete?: (riskId: string) => void
+  onStatusChange?: (riskId: string, status: Database['public']['Enums']['risk_status']) => void
+}
+
+export interface ImpedimentCardProps {
+  impediment: Database['public']['Tables']['impediments']['Row'] & {
+    stage?: { id: string; name: string }
+    assigned_user?: { id: string; email: string; full_name: string; avatar_url?: string }
+  }
+  onEdit?: (impediment: Database['public']['Tables']['impediments']['Row']) => void
+  onDelete?: (impedimentId: string) => void
+  onStatusChange?: (impedimentId: string, status: Database['public']['Enums']['impediment_status']) => void
 }
 
 // Tipos para filtros e ordenação
@@ -59,6 +101,56 @@ export interface TaskFilters {
   assigned_to?: string
   project_id?: string
   search?: string
+}
+
+export interface RiskFilters {
+  status?: Database['public']['Enums']['risk_status']
+  impact?: Database['public']['Enums']['risk_impact']
+  probability?: Database['public']['Enums']['risk_probability']
+  responsible_id?: string
+  project_id?: string
+  stage_id?: string
+  search?: string
+}
+
+export interface ImpedimentFilters {
+  status?: Database['public']['Enums']['impediment_status']
+  criticality?: Database['public']['Enums']['impediment_criticality']
+  responsible_id?: string
+  project_id?: string
+  stage_id?: string
+  search?: string
+}
+
+export interface ProjectLogFilters {
+  page?: number
+  limit?: number
+  action_type?: 'INSERT' | 'UPDATE' | 'DELETE'
+  table_name?: string
+  user_id?: string
+  start_date?: string
+  end_date?: string
+  search?: string
+}
+
+// Tipos para logs de projeto
+export interface ProjectLog {
+  id: string
+  project_id: string
+  table_name: string
+  record_id: string
+  action_type: 'INSERT' | 'UPDATE' | 'DELETE'
+  user_id: string | null
+  created_at: string
+  old_data: Record<string, unknown> | null
+  new_data: Record<string, unknown> | null
+  description: string | null
+  user?: {
+    id: string
+    email: string
+    full_name: string
+    avatar_url?: string
+  }
 }
 
 export type SortOrder = 'asc' | 'desc'
@@ -209,8 +301,8 @@ export interface ProjectStrategicInfoResponse {
   committee_approval_date?: string | null
   real_start_date?: string | null
   real_end_date?: string | null
-  strategic_objectives?: StrategicObjective | null
-  strategic_pillars?: StrategicPillar | null
+  strategic_objective?: StrategicObjective | null
+  strategic_pillar?: StrategicPillar | null
   tags: Tag[]
   areas: Area[]
   stakeholders: Stakeholder[]
@@ -238,4 +330,114 @@ export interface UseTasksReturn {
   updateTask: (id: string, updates: Partial<Database['public']['Tables']['tasks']['Update']>) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   refetch: () => Promise<void>
+}
+
+export interface UseRisksReturn {
+  risks: (Database['public']['Tables']['risks']['Row'] & {
+    stage?: { id: string; name: string }
+    assigned_user?: { id: string; email: string; full_name: string; avatar_url?: string }
+  })[]
+  loading: boolean
+  error: string | null
+  createRisk: (risk: CreateRiskForm) => Promise<void>
+  updateRisk: (id: string, updates: Partial<Database['public']['Tables']['risks']['Update']>) => Promise<void>
+  deleteRisk: (id: string) => Promise<void>
+  refetch: () => Promise<void>
+}
+
+export interface UseImpedimentsReturn {
+  impediments: (Database['public']['Tables']['impediments']['Row'] & {
+    stage?: { id: string; name: string }
+    assigned_user?: { id: string; email: string; full_name: string; avatar_url?: string }
+  })[]
+  loading: boolean
+  error: string | null
+  createImpediment: (impediment: CreateImpedimentForm) => Promise<void>
+  updateImpediment: (id: string, updates: Partial<Database['public']['Tables']['impediments']['Update']>) => Promise<void>
+  deleteImpediment: (id: string) => Promise<void>
+  refetch: () => Promise<void>
+}
+
+// Tipos globais para riscos e impedimentos
+export interface GlobalRisk {
+  id: string
+  stage_id: string
+  name: string
+  description?: string
+  status: Database['public']['Enums']['risk_status']
+  impact: Database['public']['Enums']['risk_impact']
+  probability: Database['public']['Enums']['risk_probability']
+  responsible_id: string
+  identification_date: string
+  expected_resolution_date?: string
+  created_at?: string
+  updated_at?: string
+  stage?: {
+    id: string
+    name: string
+    project?: {
+      id: string
+      name: string
+    }
+  }
+  responsible_user?: {
+    id: string
+    email: string
+    full_name: string
+    avatar_url?: string
+  }
+}
+
+export interface GlobalImpediment {
+  id: string
+  stage_id: string
+  description: string
+  identification_date: string
+  responsible_id: string
+  expected_resolution_date?: string
+  criticality: Database['public']['Enums']['impediment_criticality']
+  status: Database['public']['Enums']['impediment_status']
+  created_at?: string
+  updated_at?: string
+  stage?: {
+    id: string
+    name: string
+    project?: {
+      id: string
+      name: string
+    }
+  }
+  responsible_user?: {
+    id: string
+    email: string
+    full_name: string
+    avatar_url?: string
+  }
+}
+
+// Tipos para itens de trabalho unificados
+export interface WorkItem {
+  id: string
+  title: string
+  description?: string
+  status: string
+  priority: 'low' | 'medium' | 'high' | 'critical' | 'urgent'
+  type: 'task' | 'risk' | 'impediment'
+  stage_id?: string
+  project_id: string
+  assigned_to?: string
+  created_at: string
+  updated_at: string
+  stage?: { id: string; name: string }
+  assigned_user?: { id: string; email: string; full_name: string; avatar_url?: string }
+}
+
+export interface StageWorkItemsResponse {
+  stage: { id: string; name: string }
+  items: {
+    tasks: WorkItem[]
+    risks: WorkItem[]
+    impediments: WorkItem[]
+    total: number
+  }
 }

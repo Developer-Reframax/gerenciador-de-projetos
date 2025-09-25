@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,8 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
-  FileText
+  AlertTriangle,
+  AlertCircle
 } from "lucide-react"
 import { NotificationBadge, NotificationCenter } from "@/components/notifications"
 import { useNotifications } from "@/hooks/useNotifications"
@@ -53,6 +54,16 @@ const sidebarItems = [
     href: "/users"
   },
   {
+    title: "Riscos",
+    icon: AlertTriangle,
+    href: "/risks"
+  },
+  {
+    title: "Impedimentos",
+    icon: AlertCircle,
+    href: "/impediments"
+  },
+  {
     title: "Kanban",
     icon: FolderKanban,
     href: "/kanban"
@@ -61,11 +72,6 @@ const sidebarItems = [
     title: "Gantt",
     icon: Calendar,
     href: "/gantt"
-  },
-  {
-    title: "Documentos",
-    icon: FileText,
-    href: "/documents"
   }
 ]
 
@@ -74,6 +80,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notificationCenterOpen, setNotificationCenterOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const isMobile = useIsMobile()
   const { user, signOut, loading } = useAuth()
   const { notifications } = useNotifications()
@@ -118,14 +125,12 @@ export function MainLayout({ children }: MainLayoutProps) {
                   "w-full justify-start gap-3 h-10",
                   (!isMobile && !sidebarOpen) && "px-2"
                 )}
-                asChild
+                onClick={() => router.push(item.href)}
               >
-                <a href={item.href}>
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {(isMobile || sidebarOpen) && (
-                    <span>{item.title}</span>
-                  )}
-                </a>
+                <Icon className="h-4 w-4 shrink-0" />
+                {(isMobile || sidebarOpen) && (
+                  <span>{item.title}</span>
+                )}
               </Button>
             )
           })}
@@ -140,14 +145,12 @@ export function MainLayout({ children }: MainLayoutProps) {
             "w-full justify-start gap-3 h-10",
             (!isMobile && !sidebarOpen) && "px-2"
           )}
-          asChild
+          onClick={() => router.push("/settings")}
         >
-          <a href="/settings">
-            <Settings className="h-4 w-4 shrink-0" />
-            {(isMobile || sidebarOpen) && (
-              <span>Configurações</span>
-            )}
-          </a>
+          <Settings className="h-4 w-4 shrink-0" />
+          {(isMobile || sidebarOpen) && (
+            <span>Configurações</span>
+          )}
         </Button>
       </div>
     </div>
@@ -259,17 +262,13 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <a href="/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Perfil</span>
-                  </a>
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Perfil</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Configurações</span>
-                  </a>
+                <DropdownMenuItem onClick={() => router.push("/settings")}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Configurações</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>

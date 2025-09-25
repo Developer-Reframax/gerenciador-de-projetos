@@ -24,7 +24,7 @@ export async function GET(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -46,15 +46,16 @@ export async function GET(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = !!collaborator
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {
@@ -166,7 +167,7 @@ export async function POST(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -188,15 +189,16 @@ export async function POST(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id, role')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = !!collaborator && !!collaborator.role && ['owner', 'manager', 'collaborator'].includes(collaborator.role)
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {

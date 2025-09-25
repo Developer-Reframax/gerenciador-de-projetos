@@ -6,12 +6,13 @@ import { useProjectDeviations } from '@/hooks/use-project-deviations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Users, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Users } from 'lucide-react'
 import Link from 'next/link'
 import { ProjectSchedule } from '@/components/projects/project-schedule'
 import { ProjectComments } from '@/components/comments/project-comments'
 import { ProjectAttachments } from '@/components/projects/project-attachments'
+import { ProjectLogsTab } from '@/components/projects/project-logs-tab'
+
 import { ProjectStrategicInfo } from '@/components/projects/project-strategic-info'
 import { DeviationList } from '@/components/projects/deviation-list'
 import { format } from 'date-fns'
@@ -38,8 +39,8 @@ export default function ProjectDetailsPage() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Projeto não encontrado</h2>
-          <p className="text-gray-600 mb-4">{error || 'O projeto solicitado não existe ou você não tem permissão para visualizá-lo.'}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Projeto não encontrado</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error || 'O projeto solicitado não existe ou você não tem permissão para visualizá-lo.'}</p>
           <Link href="/projects">
             <Button>
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -55,9 +56,11 @@ export default function ProjectDetailsPage() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800'
       case 'completed': return 'bg-blue-100 text-blue-800'
+      case 'planning': return 'bg-purple-100 text-purple-800'
       case 'on_hold': return 'bg-yellow-100 text-yellow-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
       case 'blocked': return 'bg-red-100 text-red-800'
+      case 'archived': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -66,9 +69,11 @@ export default function ProjectDetailsPage() {
     switch (status) {
       case 'active': return 'Ativo'
       case 'completed': return 'Concluído'
+      case 'planning': return 'Planejamento'
       case 'on_hold': return 'Em Pausa'
       case 'cancelled': return 'Cancelado'
       case 'blocked': return 'Bloqueado'
+      case 'archived': return 'Arquivado'
       default: return 'Desconhecido'
     }
   }
@@ -85,7 +90,7 @@ export default function ProjectDetailsPage() {
             </Button>
           </Link>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{project.name}</h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge className={getStatusColor(project.status || 'active')}>
                 {getStatusText(project.status || 'active')}
@@ -103,36 +108,32 @@ export default function ProjectDetailsPage() {
 
       {/* Tabs */}
       <Tabs defaultValue="details" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="details">Detalhes</TabsTrigger>
               <TabsTrigger value="strategic">Estratégico</TabsTrigger>
-              <TabsTrigger value="schedule">Cronograma</TabsTrigger>
+              <TabsTrigger value="schedule">Itens de Trabalho</TabsTrigger>
               <TabsTrigger value="deviations">
                 Desvios
               </TabsTrigger>
               <TabsTrigger value="comments">Comentários</TabsTrigger>
               <TabsTrigger value="attachments">Anexos</TabsTrigger>
+              <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
 
         {/* Aba Detalhes */}
         <TabsContent value="details" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Informações Gerais</h3>
+            <div className="bg-card p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4 dark:text-white">Informações Gerais</h3>
               <div className="space-y-3">
                 <div>
-                  <span className="text-sm text-gray-500">Status:</span>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                    project.status === 'active' ? 'bg-green-100 text-green-800' :
-                    project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                    project.status === 'on_hold' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${getStatusColor(project.status)}`}>
                     {getStatusText(project.status)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Prioridade:</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Prioridade:</span>
                   <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
                     project.priority === 'high' ? 'bg-red-100 text-red-800' :
                     project.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
@@ -143,45 +144,45 @@ export default function ProjectDetailsPage() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Data de Início:</span>
-                  <span className="ml-2 text-sm">
-                    {project.start_date ? format(new Date(project.start_date), 'dd/MM/yyyy', { locale: ptBR }) : 'Não definida'}
-                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Data de Início:</span>
+                  <span className="ml-2 text-sm dark:text-gray-300">
+                     {project.start_date ? format(new Date(project.start_date), 'dd/MM/yyyy', { locale: ptBR }) : 'Não definida'}
+                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Data de Término:</span>
-                  <span className="ml-2 text-sm">
-                    {project.due_date ? format(new Date(project.due_date), 'dd/MM/yyyy', { locale: ptBR }) : 'Não definida'}
-                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Data de Término:</span>
+                  <span className="ml-2 text-sm dark:text-gray-300">
+                     {project.due_date ? format(new Date(project.due_date), 'dd/MM/yyyy', { locale: ptBR }) : 'Não definida'}
+                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Orçamento:</span>
-                  <span className="ml-2 text-sm">
-                    {project.budget ? `R$ ${project.budget.toLocaleString('pt-BR')}` : 'Não definido'}
-                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Orçamento:</span>
+                  <span className="ml-2 text-sm dark:text-gray-300">
+                     {project.budget ? `R$ ${project.budget.toLocaleString('pt-BR')}` : 'Não definido'}
+                   </span>
                 </div>
               </div>
             </div>
 
             {/* Responsáveis */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Responsáveis</h3>
+            <div className="bg-card p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4 dark:text-white">Responsáveis</h3>
               <div className="space-y-3">
                 <div>
-                  <span className="text-sm text-gray-500">Proprietário:</span>
-                  <span className="ml-2 text-sm">
-                    {project.owner?.full_name || project.owner?.email || 'Não definido'}
-                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Proprietário:</span>
+                  <span className="ml-2 text-sm dark:text-gray-300">
+                     {project.owner?.full_name || project.owner?.email || 'Não definido'}
+                   </span>
                 </div>
                 
 
 
                 {project.team && (
                   <div>
-                    <span className="text-sm text-gray-500">Equipe:</span>
-                    <span className="ml-2 text-sm">{project.team.name}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Equipe:</span>
+                    <span className="ml-2 text-sm dark:text-gray-300">{project.team.name}</span>
                     {project.team.description && (
-                      <div className="text-sm text-gray-600 mt-1">{project.team.description}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">{project.team.description}</div>
                     )}
                   </div>
                 )}
@@ -189,32 +190,32 @@ export default function ProjectDetailsPage() {
             </div>
 
             {/* Estatísticas */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Estatísticas</h3>
+            <div className="bg-card p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold mb-4 dark:text-white">Estatísticas</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
+                <div className="text-center p-4 bg-card rounded-lg border">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {project.total_tasks || 0}
                   </div>
-                  <div className="text-sm text-blue-600">Total de Tarefas</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400">Total de Tarefas</div>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="text-center p-4 bg-card rounded-lg border">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {project.completed_tasks || 0}
                   </div>
-                  <div className="text-sm text-green-600">Concluídas</div>
+                  <div className="text-sm text-green-600 dark:text-green-400">Concluídas</div>
                 </div>
-                <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-center p-4 bg-card rounded-lg border">
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {(project.total_tasks || 0) - (project.completed_tasks || 0)}
                   </div>
-                  <div className="text-sm text-yellow-600">Pendentes</div>
+                  <div className="text-sm text-yellow-600 dark:text-yellow-400">Pendentes</div>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">
+                <div className="text-center p-4 bg-card rounded-lg border">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {project.progress_percentage || 0}%
                   </div>
-                  <div className="text-sm text-purple-600">Progresso</div>
+                  <div className="text-sm text-purple-600 dark:text-purple-400">Progresso</div>
                 </div>
               </div>
             </div>
@@ -228,7 +229,7 @@ export default function ProjectDetailsPage() {
           <ProjectStrategicInfo projectId={projectId} />
         </TabsContent>
 
-        {/* Aba Cronograma */}
+        {/* Aba Itens de Trabalho */}
         <TabsContent value="schedule">
           <ProjectSchedule projectId={projectId} />
         </TabsContent>
@@ -250,6 +251,11 @@ export default function ProjectDetailsPage() {
         {/* Aba Anexos */}
         <TabsContent value="attachments">
           <ProjectAttachments projectId={projectId} />
+        </TabsContent>
+
+        {/* Aba Logs */}
+        <TabsContent value="logs">
+          <ProjectLogsTab projectId={projectId} />
         </TabsContent>
       </Tabs>
     </div>

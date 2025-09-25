@@ -27,12 +27,12 @@ export function KanbanBoard({ data, viewType, onItemClick, loading = false }: Ka
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center space-y-4">
-          <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
+          <AlertCircle className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto" />
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Nenhum dado encontrado
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Ajuste os filtros ou verifique se há {viewType === 'status' ? 'projetos' : 'tarefas'} disponíveis.
             </p>
           </div>
@@ -47,12 +47,12 @@ export function KanbanBoard({ data, viewType, onItemClick, loading = false }: Ka
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center space-y-4">
-          <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
+          <AlertCircle className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto" />
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Nenhuma coluna configurada
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Configure as colunas do Kanban para começar a usar.
             </p>
           </div>
@@ -64,15 +64,15 @@ export function KanbanBoard({ data, viewType, onItemClick, loading = false }: Ka
   return (
     <div className="h-full flex flex-col">
       {/* Header com informações do board */}
-      <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-gray-200">
+      <div className="flex-shrink-0 px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               {getViewTitle(viewType)}
             </h2>
             
             {/* Estatísticas */}
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
               <span>
                 {getColumns(data).reduce((total, col) => total + (col.tasks?.length || 0) + (col.projects?.length || 0), 0)} itens
               </span>
@@ -93,7 +93,7 @@ export function KanbanBoard({ data, viewType, onItemClick, loading = false }: Ka
 
           {/* Indicador de loading */}
           {loading && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Atualizando...</span>
             </div>
@@ -116,8 +116,8 @@ export function KanbanBoard({ data, viewType, onItemClick, loading = false }: Ka
             
             {/* Coluna placeholder para melhor UX */}
             <div className="w-80 flex-shrink-0">
-              <div className="h-full border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-400">
+              <div className="h-full border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg flex items-center justify-center">
+                <div className="text-center text-gray-400 dark:text-gray-500">
                   <div className="text-sm font-medium mb-1">
                     Arraste itens aqui
                   </div>
@@ -133,8 +133,8 @@ export function KanbanBoard({ data, viewType, onItemClick, loading = false }: Ka
 
       {/* Footer com informações adicionais */}
       {'metadata' in data && data.metadata && (
-        <div className="flex-shrink-0 px-6 py-3 bg-gray-50 border-t border-gray-200">
-          <div className="flex items-center justify-between text-xs text-gray-600">
+        <div className="flex-shrink-0 px-6 py-3 bg-card border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-4">
               {data.metadata.last_updated && (
                 <span>
@@ -180,7 +180,7 @@ export function DroppableArea({ id, children, className = '' }: DroppableAreaPro
       ref={setNodeRef}
       className={`
         ${className}
-        ${isOver ? 'bg-blue-50 border-blue-200' : ''}
+        ${isOver ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-600' : ''}
         transition-colors duration-200
       `}
     >

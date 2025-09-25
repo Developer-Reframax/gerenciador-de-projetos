@@ -5,6 +5,9 @@ import { useDropzone } from 'react-dropzone'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { 
   Upload, 
   File, 
@@ -47,14 +50,15 @@ const getFileIcon = (mimeType: string | null | undefined) => {
 
 interface Attachment {
   id: string
-  original_filename: string
   file_path: string
+  original_filename: string
   file_size: number
   mime_type: string
   file_type: string
-  uploaded_by: string
+  description: string
   created_at: string
-  users?: {
+  uploaded_by: string
+  users: {
     full_name: string
     email: string
   }
@@ -69,6 +73,9 @@ export function ProjectAttachments({ projectId }: ProjectAttachmentsProps) {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [fileDescriptions, setFileDescriptions] = useState<{[key: string]: string}>({})
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Carregar anexos
@@ -94,14 +101,15 @@ export function ProjectAttachments({ projectId }: ProjectAttachmentsProps) {
     loadAttachments()
   }, [loadAttachments])
 
-  // Upload de arquivo
-  const uploadFile = useCallback(async (file: File) => {
+  // Upload de arquivo com descrição
+  const uploadFile = useCallback(async (file: File, description: string) => {
     setUploading(true)
     setUploadProgress(0)
 
     try {
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('description', description)
 
       const response = await fetch(`/api/projects/${projectId}/attachments`, {
         method: 'POST',
@@ -168,16 +176,36 @@ export function ProjectAttachments({ projectId }: ProjectAttachmentsProps) {
 
   // Configuração do dropzone
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    setSelectedFiles(acceptedFiles)
+    const descriptions: {[key: string]: string} = {}
     acceptedFiles.forEach(file => {
-      uploadFile(file)
+      descriptions[file.name] = ''
     })
-  }, [uploadFile])
+    setFileDescriptions(descriptions)
+    setShowUploadDialog(true)
+  }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     maxSize: 50 * 1024 * 1024, // 50MB
-    multiple: true
+    multiple: true,
+    noClick: true
   })
+
+  // Processar upload dos arquivos selecionados
+  const handleUploadFiles = async () => {
+    for (const file of selectedFiles) {
+      const description = fileDescriptions[file.name]
+      if (!description || description.trim() === '') {
+        toast.error(`Descrição é obrigatória para o arquivo: ${file.name}`)
+        return
+      }
+      await uploadFile(file, description.trim())
+    }
+    setSelectedFiles([])
+    setFileDescriptions({})
+    setShowUploadDialog(false)
+  }
 
 
 
@@ -260,10 +288,72 @@ export function ProjectAttachments({ projectId }: ProjectAttachmentsProps) {
               className="hidden"
               onChange={(e) => {
                 const files = Array.from(e.target.files || [])
-                files.forEach(file => uploadFile(file))
+                if (files.length > 0) {
+                  setSelectedFiles(files)
+                  const descriptions: {[key: string]: string} = {}
+                  files.forEach(file => {
+                    descriptions[file.name] = ''
+                  })
+                  setFileDescriptions(descriptions)
+                  setShowUploadDialog(true)
+                }
               }}
             />
           </div>
+
+          {/* Diálogo de Upload com Descrição */}
+          <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Adicionar Descrição aos Arquivos</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="space-y-2 p-4 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <File className="w-4 h-4 text-gray-500" />
+                      <span className="font-medium">{file.name}</span>
+                      <span className="text-sm text-gray-500">({formatBytes(file.size)})</span>
+                    </div>
+                    <div>
+                      <Label htmlFor={`description-${index}`}>Descrição *</Label>
+                      <Input
+                        id={`description-${index}`}
+                        placeholder="Descreva o conteúdo ou propósito deste arquivo..."
+                        value={fileDescriptions[file.name] || ''}
+                        onChange={(e) => {
+                          setFileDescriptions(prev => ({
+                            ...prev,
+                            [file.name]: e.target.value
+                          }))
+                        }}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowUploadDialog(false)
+                      setSelectedFiles([])
+                      setFileDescriptions({})
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleUploadFiles}
+                    disabled={uploading || selectedFiles.some(file => !fileDescriptions[file.name]?.trim())}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Enviar Arquivos
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
 
@@ -301,7 +391,12 @@ export function ProjectAttachments({ projectId }: ProjectAttachmentsProps) {
                       <p className="font-medium truncate">
                         {attachment.original_filename}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      {attachment.description && (
+                        <p className="text-sm text-gray-700 mt-1 line-clamp-2">
+                          {attachment.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                         <span>{formatBytes(attachment.file_size)}</span>
                         <span>
                           Por {attachment.users?.full_name || attachment.users?.email || 'Usuário desconhecido'}

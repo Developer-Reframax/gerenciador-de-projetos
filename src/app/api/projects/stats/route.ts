@@ -17,53 +17,63 @@ export async function GET() {
       )
     }
 
-    // Buscar projetos onde o usuário é owner
-    const { data: ownedProjects, error: ownedError } = await supabase
-      .from('projects')
-      .select('id, status, priority')
-      .eq('owner_id', user.id)
-
-    if (ownedError) {
-      console.error('Erro ao buscar projetos próprios:', ownedError)
-      return NextResponse.json(
-        { error: 'Erro interno do servidor' },
-        { status: 500 }
-      )
-    }
-
-    // Buscar projetos onde o usuário é colaborador
-    const { data: collaboratorProjects, error: collaboratorError } = await supabase
-      .from('project_collaborators')
-      .select('project_id, projects(id, status, priority)')
+    // Buscar equipes onde o usuário é membro (mesma lógica da listagem)
+    const { data: teamMembers, error: teamMembersError } = await supabase
+      .from('team_members')
+      .select('team_id')
       .eq('user_id', user.id)
 
-    if (collaboratorError) {
-      console.error('Erro ao buscar projetos como colaborador:', collaboratorError)
+    if (teamMembersError) {
+      console.error('Erro ao buscar team_members:', teamMembersError)
       return NextResponse.json(
         { error: 'Erro interno do servidor' },
         { status: 500 }
       )
     }
 
-    // Combinar resultados removendo duplicatas
-    const projectsMap = new Map()
-    
-    // Adicionar projetos próprios
-    ownedProjects?.forEach(project => {
-      projectsMap.set(project.id, { status: project.status, priority: project.priority })
-    })
-    
-    // Adicionar projetos como colaborador
-    collaboratorProjects?.forEach(collab => {
-      if (collab.projects) {
-        projectsMap.set(collab.projects.id, { 
-          status: collab.projects.status, 
-          priority: collab.projects.priority 
-        })
+    // Se o usuário não faz parte de nenhuma equipe, retornar estatísticas zeradas
+    if (!teamMembers || teamMembers.length === 0) {
+      const emptyStats = {
+        total: 0,
+        completed: 0,
+        active: 0,
+        planning: 0,
+        on_hold: 0,
+        cancelled: 0,
+        completion_rate: 0,
+        by_status: {
+          planning: 0,
+          active: 0,
+          completed: 0,
+          on_hold: 0,
+          cancelled: 0
+        },
+        by_priority: {
+          low: 0,
+          medium: 0,
+          high: 0,
+          urgent: 0
+        }
       }
-    })
-    
-    const projects = Array.from(projectsMap.values())
+      return NextResponse.json({ stats: emptyStats })
+    }
+
+    // Extrair os team_ids
+    const teamIds = teamMembers.map(tm => tm.team_id)
+
+    // Buscar projetos das equipes onde o usuário é membro (mesma lógica da listagem)
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select('id, status, priority')
+      .in('team_id', teamIds)
+
+    if (projectsError) {
+      console.error('Erro ao buscar projetos:', projectsError)
+      return NextResponse.json(
+        { error: 'Erro interno do servidor' },
+        { status: 500 }
+      )
+    }
 
     // Calcular estatísticas
     const projectsArray = projects || []

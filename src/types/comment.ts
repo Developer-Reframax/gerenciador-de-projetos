@@ -1,6 +1,6 @@
 // Tipos para o sistema de comentários
 
-export type CommentType = 'comment' | 'status_change' | 'system'
+export type CommentType = 'comment' | 'status_change' | 'system' | 'mention'
 export type CommentContext = 'task' | 'project' | 'team'
 
 export interface User {
@@ -45,6 +45,7 @@ export interface UpdateCommentData {
   content?: string
   is_pinned?: boolean
   is_internal?: boolean
+  mentioned_users?: string[]
 }
 
 export interface CommentReaction {
@@ -53,7 +54,7 @@ export interface CommentReaction {
   count: number
 }
 
-import { MessageCircle, AlertTriangle, CheckCircle, LucideIcon } from 'lucide-react'
+import { MessageCircle, AlertTriangle, CheckCircle, AtSign, LucideIcon } from 'lucide-react'
 
 export interface CommentTypeConfig {
   label: string
@@ -73,7 +74,11 @@ export const COMMENT_TYPE_CONFIG: Record<CommentType, CommentTypeConfig> = {
     color: 'bg-purple-100 text-purple-800 border-purple-200',
     icon: CheckCircle
   },
-
+  mention: {
+    label: 'Menção',
+    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    icon: AtSign
+  },
   system: {
     label: 'Sistema',
     color: 'bg-gray-100 text-gray-800 border-gray-200',

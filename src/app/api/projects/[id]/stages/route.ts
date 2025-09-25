@@ -13,8 +13,8 @@ export async function GET(
     const supabase = createRouteHandlerClient(cookieStore)
 
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user || !user.id) {
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }
@@ -42,19 +42,20 @@ export async function GET(
       )
     }
 
-    // Check if user is owner or team member
+    // Check if user is owner or team member with write access
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator, error } = await supabase
-        .from('project_collaborators')
-        .select('id')
-        .eq('project_id', id)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle()
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id!)
 
-      hasAccess = !!collaborator && !error
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {
@@ -64,7 +65,7 @@ export async function GET(
        )
      }
 
-    // Get stages with their tasks
+    // Get stages with their tasks, risks, and impediments
     const { data: stages, error: stagesError } = await supabase
       .from('stages')
       .select(`
@@ -82,6 +83,7 @@ export async function GET(
           status,
           priority,
           assignee_id,
+          estimated_hours,
           position,
           stage_id,
           created_at
@@ -90,12 +92,34 @@ export async function GET(
       .eq('project_id', id)
       .order('position', { ascending: true })
 
+    // First get all stage IDs for this project
+    const stageIds = stages?.map(stage => stage.id) || []
+
+    // Get risks and impediments for all stages in the project
+    const { data: risks, error: risksError } = await supabase
+      .from('risks')
+      .select('*')
+      .in('stage_id', stageIds)
+
+    const { data: impediments, error: impedimentsError } = await supabase
+      .from('impediments')
+      .select('*')
+      .in('stage_id', stageIds)
+
     if (stagesError) {
       console.error('Erro ao buscar estágios:', stagesError)
       return NextResponse.json(
         { error: 'Erro ao buscar estágios' },
         { status: 500 }
       )
+    }
+
+    if (risksError) {
+      console.error('Erro ao buscar riscos:', risksError)
+    }
+
+    if (impedimentsError) {
+      console.error('Erro ao buscar impedimentos:', impedimentsError)
     }
 
     // Define types for better type safety
@@ -106,9 +130,38 @@ export async function GET(
       status: string
       priority: string
       assignee_id?: string
+      estimated_hours?: number
       position: number
       stage_id: string
       created_at: string
+    }
+
+    interface Risk {
+      id: string
+      name: string
+      description?: string
+      probability: string
+      impact: string
+      status: string
+      stage_id: string
+      responsible_id: string
+      identification_date: string
+      expected_resolution_date?: string
+      created_at?: string
+      updated_at?: string
+    }
+
+    interface Impediment {
+      id: string
+      description: string
+      status: string
+      criticality: string
+      stage_id: string
+      responsible_id: string
+      identification_date: string
+      expected_resolution_date?: string
+      created_at?: string
+      updated_at?: string
     }
 
     interface Stage {
@@ -120,12 +173,34 @@ export async function GET(
       project_id: string
       created_at: string
       tasks?: Task[]
+      risks?: Risk[]
+      impediments?: Impediment[]
     }
 
-    // Sort tasks by position within each stage
+    // Group risks and impediments by stage_id
+    const risksByStage = (risks || []).reduce((acc: Record<string, Risk[]>, risk: Risk) => {
+      if (risk.stage_id) {
+        if (!acc[risk.stage_id]) acc[risk.stage_id] = []
+        acc[risk.stage_id].push(risk)
+      }
+      return acc
+    }, {})
+
+    const impedimentsByStage = (impediments || []).reduce((acc: Record<string, Impediment[]>, impediment: Impediment) => {
+      if (impediment.stage_id) {
+        if (!acc[impediment.stage_id]) acc[impediment.stage_id] = []
+        acc[impediment.stage_id].push(impediment)
+      }
+      return acc
+    }, {})
+
+    // Sort tasks by position within each stage and add risks/impediments
     const stagesWithSortedTasks = (stages as unknown as Stage[]).map((stage) => ({
       ...stage,
-      tasks: (stage.tasks || []).sort((a, b) => a.position - b.position)
+      order_index: stage.position, // Map position to order_index for frontend compatibility
+      tasks: (stage.tasks || []).sort((a, b) => a.position - b.position),
+      risks: risksByStage[stage.id] || [],
+      impediments: impedimentsByStage[stage.id] || []
     }))
 
     return NextResponse.json({
@@ -157,14 +232,14 @@ export async function POST(
       error: userError,
     } = await supabase.auth.getUser()
 
-    if (userError || !user) {
+    if (userError || !user || !user.id) {
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }
       )
     }
     const body = await request.json()
-    const { name, description, color } = body
+    const { name, description, color, order_index } = body
 
     // Validate required fields
     if (!name || !name.trim()) {
@@ -199,15 +274,16 @@ export async function POST(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator, error } = await supabase
-        .from('project_collaborators')
-        .select('id, role')
-        .eq('project_id', id)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle()
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id!)
 
-      hasAccess = !!collaborator && !error && !!collaborator.role && ['owner', 'manager'].includes(collaborator.role)
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {
@@ -226,7 +302,7 @@ export async function POST(
       .limit(1)
       .single()
 
-    const nextPosition = lastStage && lastStage.position !== null ? lastStage.position + 1 : 0
+    const nextPosition = order_index !== undefined ? order_index : (lastStage && lastStage.position !== null ? lastStage.position + 1 : 0)
 
     // Create the stage
     const { data: stage, error: stageError } = await supabase
@@ -252,6 +328,7 @@ export async function POST(
     return NextResponse.json({
       stage: {
         ...stage,
+        order_index: stage.position, // Map position to order_index for frontend compatibility
         tasks: []
       }
     }, { status: 201 })

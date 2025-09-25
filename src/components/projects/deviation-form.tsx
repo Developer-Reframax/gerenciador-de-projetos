@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Control } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -38,10 +38,8 @@ const deviationSchema = z.object({
   requires_approval: z.boolean().default(false),
   approver_id: z.string().optional(),
   status: z.string().optional(),
-  approved_by: z.string().optional(),
   approval_date: z.string().optional(),
-  approval_notes: z.string().optional(),
-  implementation_date: z.string().optional()
+  approval_notes: z.string().optional()
 }).refine((data) => {
   if (data.was_requested && !data.requested_by) {
     return false
@@ -91,7 +89,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
   const { users } = useUsers()
   const [loading, setLoading] = React.useState(false)
 
-  const form = useForm<z.infer<typeof deviationSchema>>({
+  const form = useForm({
     resolver: zodResolver(deviationSchema),
     defaultValues: {
       description: deviation?.description || '',
@@ -102,10 +100,8 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
       requires_approval: deviation?.requires_approval || false,
       approver_id: deviation?.approver_id || '',
       status: deviation?.status || 'Pendente',
-      approved_by: deviation?.approver_id || '',
-      approval_date: deviation?.approved_at || '',
-      approval_notes: deviation?.approval_notes || '',
-      implementation_date: deviation?.updated_at || ''
+      approval_date: deviation?.approved_at ? new Date(deviation.approved_at).toISOString().split('T')[0] : '',
+      approval_notes: deviation?.approval_notes || ''
     }
   })
 
@@ -134,9 +130,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
         approver_id: data.requires_approval ? data.approver_id : null,
         status: data.status || 'Pendente',
         approved_at: data.approval_date || null,
-        approved_by: data.approved_by || null,
-        approval_notes: data.approval_notes || null,
-        updated_at: data.implementation_date || null
+        approval_notes: data.approval_notes || null
       }
 
       const response = await fetch(url, {
@@ -165,10 +159,10 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit((data: DeviationFormData) => onSubmit(data))} className="space-y-6">
         {/* Foi Solicitado */}
         <FormField
-          control={form.control}
+          control={form.control as Control<DeviationFormData>}
           name="was_requested"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -191,7 +185,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
         {/* Solicitante (condicional) */}
         {wasRequested && (
           <FormField
-            control={form.control}
+            control={form.control as Control<DeviationFormData>}
             name="requested_by"
             render={({ field }) => (
               <FormItem>
@@ -218,7 +212,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
 
         {/* Descrição */}
         <FormField
-          control={form.control}
+          control={form.control as Control<DeviationFormData>}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -237,7 +231,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
 
         {/* Critério de Avaliação */}
         <FormField
-          control={form.control}
+          control={form.control as Control<DeviationFormData>}
           name="evaluation_criteria"
           render={({ field }) => (
             <FormItem>
@@ -263,7 +257,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
 
         {/* Tipo de Impacto */}
         <FormField
-          control={form.control}
+          control={form.control as Control<DeviationFormData>}
           name="impact_type"
           render={({ field }) => (
             <FormItem>
@@ -291,7 +285,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
 
         {/* Requer Aprovação */}
         <FormField
-          control={form.control}
+          control={form.control as Control<DeviationFormData>}
           name="requires_approval"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -314,7 +308,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
         {/* Aprovador (condicional) */}
         {requiresApproval && (
           <FormField
-            control={form.control}
+            control={form.control as Control<DeviationFormData>}
             name="approver_id"
             render={({ field }) => (
               <FormItem>
@@ -342,7 +336,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
         {/* Status (apenas para edição) */}
         {deviation && (
           <FormField
-            control={form.control}
+            control={form.control as Control<DeviationFormData>}
             name="status"
             render={({ field }) => (
               <FormItem>
@@ -367,38 +361,12 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
           />
         )}
 
-        {/* Aprovador (apenas para edição) */}
-        {deviation && (
-          <FormField
-            control={form.control}
-            name="approved_by"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Aprovador</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o aprovador" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {users?.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.full_name || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+
 
         {/* Data de Aprovação (apenas para edição) */}
         {deviation && (
           <FormField
-            control={form.control}
+            control={form.control as Control<DeviationFormData>}
             name="approval_date"
             render={({ field }) => (
               <FormItem>
@@ -415,7 +383,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
         {/* Notas de Aprovação (apenas para edição) */}
         {deviation && (
           <FormField
-            control={form.control}
+            control={form.control as Control<DeviationFormData>}
             name="approval_notes"
             render={({ field }) => (
               <FormItem>
@@ -433,22 +401,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
           />
         )}
 
-        {/* Data de Implementação (apenas para edição) */}
-        {deviation && (
-          <FormField
-            control={form.control}
-            name="implementation_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data de Implementação</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+
 
         {/* Botões */}
         <div className="flex justify-end space-x-2">

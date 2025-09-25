@@ -24,7 +24,7 @@ export async function GET(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -46,15 +46,16 @@ export async function GET(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = !!collaborator
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {
@@ -110,6 +111,7 @@ export async function GET(
       id: stage.id,
       name: stage.name,
       position: stage.position,
+      order_index: stage.position, // Map position to order_index for frontend compatibility
       project_id: stage.project_id,
       created_at: stage.created_at,
       tasks: sortedTasks
@@ -147,7 +149,7 @@ export async function PUT(
       )
     }
     const body = await request.json()
-    const { name, description, color, position } = body
+    const { name, description, color, position, order_index } = body
 
     // Validate required fields
     if (name !== undefined && (!name || !name.trim())) {
@@ -160,7 +162,7 @@ export async function PUT(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -182,15 +184,16 @@ export async function PUT(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id, role')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = !!collaborator && !!collaborator.role && ['admin', 'editor'].includes(collaborator.role)
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {
@@ -228,6 +231,7 @@ export async function PUT(
     if (description !== undefined) updateData.description = description?.trim() || null
     if (color !== undefined) updateData.color = color
     if (position !== undefined) updateData.position = position
+    if (order_index !== undefined) updateData.position = order_index // Map order_index to position
 
     // Update the stage
     const { data: stage, error: stageError } = await supabase
@@ -246,7 +250,10 @@ export async function PUT(
     }
 
     return NextResponse.json({
-      stage
+      stage: {
+        ...stage,
+        order_index: stage.position // Map position to order_index for frontend compatibility
+      }
     })
 
   } catch (error) {
@@ -280,7 +287,7 @@ export async function DELETE(
     // Verify user has access to this project
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, owner_id')
+      .select('id, owner_id, team_id')
       .eq('id', id)
       .single()
 
@@ -302,15 +309,16 @@ export async function DELETE(
     let hasAccess = project.owner_id === user.id
 
     if (!hasAccess) {
-      const { data: collaborator } = await supabase
-        .from('project_collaborators')
-        .select('id, role')
-        .eq('project_id', id)
+      // Get user's team memberships
+      const { data: teamMembers, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
         .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
 
-      hasAccess = !!collaborator && collaborator.role === 'admin'
+      if (!teamError && teamMembers && project.team_id) {
+        const userTeamIds = teamMembers.map(tm => tm.team_id)
+        hasAccess = userTeamIds.includes(project.team_id)
+      }
     }
 
     if (!hasAccess) {

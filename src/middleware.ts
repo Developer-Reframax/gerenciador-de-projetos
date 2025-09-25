@@ -74,10 +74,9 @@ export const config = {
      * Processar todas as rotas exceto:
      * - _next/static (arquivos estáticos)
      * - _next/image (otimização de imagens)
-     * - favicon.ico (favicon)
      * - arquivos públicos (extensões comuns)
      * - rotas da API (/api/*)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

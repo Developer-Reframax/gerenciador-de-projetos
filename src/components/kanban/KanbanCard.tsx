@@ -61,7 +61,7 @@ export function KanbanCard({ item, viewType, onClick, isDragging = false }: Kanb
       {...listeners}
       onClick={onClick}
       className={`
-        bg-white rounded-lg border border-gray-200 p-4 cursor-pointer
+        bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 cursor-pointer
         hover:shadow-md hover:border-gray-300 transition-all duration-200
         ${isBeingDragged ? 'shadow-lg rotate-2 scale-105 z-50' : ''}
         ${isBeingDragged ? 'opacity-50' : ''}
@@ -70,12 +70,12 @@ export function KanbanCard({ item, viewType, onClick, isDragging = false }: Kanb
       {/* Header do card */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 mb-1">
             {'title' in item ? item.title : 'name' in item ? item.name : ''}
           </h4>
           
           {item.description && (
-            <p className="text-xs text-gray-600 line-clamp-2">
+            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
               {item.description}
             </p>
           )}
@@ -97,12 +97,12 @@ export function KanbanCard({ item, viewType, onClick, isDragging = false }: Kanb
       )}
 
       {/* Footer do card */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-600">
         <div className="flex items-center space-x-2">
           {/* Status */}
           <div className="flex items-center space-x-1">
             {getStatusIcon(item.status)}
-            <span className="text-xs text-gray-600 capitalize">
+            <span className="text-xs text-gray-600 dark:text-gray-400 capitalize">
               {item.status.replace('_', ' ')}
             </span>
           </div>
@@ -111,7 +111,7 @@ export function KanbanCard({ item, viewType, onClick, isDragging = false }: Kanb
         {/* Ações rápidas */}
         <div className="flex items-center space-x-1">
           {/* ID do Item */}
-          <div className="flex items-center space-x-1 text-gray-500">
+          <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
             <span className="text-xs font-mono">#{item.id}</span>
           </div>
         </div>
@@ -128,7 +128,7 @@ function TaskCardContent({ task, viewType }: { task: KanbanTask; viewType: Kanba
     <div className="space-y-2">
       {/* Projeto (se não estiver na visualização por projeto) */}
       {viewType !== 'project' && task.project_id && (
-        <div className="flex items-center space-x-1 text-xs text-gray-600">
+        <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
           <div className="w-2 h-2 bg-blue-500 rounded-full" />
           <span className="truncate">Projeto #{task.project_id}</span>
         </div>
@@ -136,17 +136,17 @@ function TaskCardContent({ task, viewType }: { task: KanbanTask; viewType: Kanba
 
       {/* Responsável (se não estiver na visualização por responsável) */}
       {viewType !== 'assignee' && task.assigned_to && (
-        <div className="flex items-center space-x-1 text-xs text-gray-600">
-          <User className="h-3 w-3" />
+        <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
+          <User className="h-3 w-3 text-gray-400 dark:text-gray-500" />
           <span className="truncate">Responsável: {task.assigned_to}</span>
         </div>
       )}
 
       {/* Datas */}
-      <div className="flex items-center justify-between text-xs text-gray-600">
+      <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
         {task.due_date && (
           <div className="flex items-center space-x-1">
-            <Calendar className="h-3 w-3" />
+            <Calendar className="h-3 w-3 text-gray-400 dark:text-gray-500" />
             <span className={`
               ${isOverdue(task.due_date) ? 'text-red-600 font-medium' : ''}
             `}>
@@ -157,14 +157,14 @@ function TaskCardContent({ task, viewType }: { task: KanbanTask; viewType: Kanba
         
         {task.position !== undefined && (
           <div className="flex items-center space-x-1">
-            <Clock className="h-3 w-3" />
+            <Clock className="h-3 w-3 text-gray-400 dark:text-gray-500" />
             <span>Pos: {task.position}</span>
           </div>
         )}
       </div>
 
       {/* ID da Tarefa */}
-      <div className="text-xs text-gray-500 font-mono">
+      <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
         ID: {task.id}
       </div>
     </div>
@@ -179,7 +179,7 @@ function ProjectCardContent({ project }: { project: KanbanProject }) {
     <div className="space-y-2">
       {/* Equipe */}
       {project.team_name && (
-        <div className="flex items-center space-x-1 text-xs text-gray-600">
+        <div className="flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400">
           <Users className="h-3 w-3" />
           <span className="truncate">{project.team_name}</span>
         </div>
@@ -188,16 +188,16 @@ function ProjectCardContent({ project }: { project: KanbanProject }) {
       {/* Estatísticas do projeto */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         {project.total_tasks !== undefined && (
-          <div className="text-center p-2 bg-gray-50 rounded">
-            <div className="font-medium text-gray-900">{project.total_tasks}</div>
-            <div className="text-gray-600">Tarefas</div>
+          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+            <div className="font-medium text-gray-900 dark:text-white">{project.total_tasks}</div>
+            <div className="text-gray-600 dark:text-gray-400">Tarefas</div>
           </div>
         )}
         
         {project.completed_tasks !== undefined && (
-          <div className="text-center p-2 bg-gray-50 rounded">
-            <div className="font-medium text-green-600">{project.completed_tasks}</div>
-            <div className="text-gray-600">Concluídas</div>
+          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+            <div className="font-medium text-green-600 dark:text-green-400">{project.completed_tasks}</div>
+            <div className="text-gray-600 dark:text-gray-400">Concluídas</div>
           </div>
         )}
       </div>
@@ -236,14 +236,14 @@ export function CompactKanbanCard({ item, onClick }: CompactKanbanCardProps) {
   return (
     <div
       onClick={onClick}
-      className="bg-white border border-gray-200 rounded p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+      className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded p-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
     >
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-900 truncate">
+          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
             {'title' in item ? item.title : 'name' in item ? item.name : ''}
           </div>
-          <div className="text-xs text-gray-600 truncate">
+          <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
             {item.status.replace('_', ' ')}
           </div>
         </div>

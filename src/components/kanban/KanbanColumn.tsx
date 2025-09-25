@@ -47,10 +47,10 @@ export function KanbanColumn({
   const itemIds = items.map(item => item.id);
 
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col bg-white min-h-96">
+    <div className="w-80 flex-shrink-0 flex flex-col bg-white dark:bg-gray-800 min-h-96">
       {/* Header da coluna */}
       <div className="flex-shrink-0 mb-4">
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
           <div className="flex items-center space-x-3">
             {/* Indicador de cor da coluna */}
             <div 
@@ -59,10 +59,10 @@ export function KanbanColumn({
             />
             
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-semibold text-gray-900 truncate">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                 {column.title}
               </h3>
-              <div className="flex items-center space-x-2 text-xs text-gray-600">
+              <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
                 <span>{items.length} itens</span>
               </div>
             </div>
@@ -73,7 +73,7 @@ export function KanbanColumn({
             {onAddItem && (
               <button
                 onClick={onAddItem}
-                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                 title="Adicionar item"
               >
                 <Plus className="h-4 w-4" />
@@ -81,7 +81,7 @@ export function KanbanColumn({
             )}
             
             <button
-              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
               title="Mais opções"
             >
               <MoreVertical className="h-4 w-4" />
@@ -96,8 +96,8 @@ export function KanbanColumn({
         className={`
           flex-1 min-h-32 rounded-lg border-2 border-dashed transition-all duration-200
           ${isDraggedOver 
-            ? 'border-blue-400 bg-blue-50' 
-            : 'border-gray-200 bg-gray-50/30'
+            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' 
+            : 'border-gray-200 dark:border-gray-600 bg-gray-50/30 dark:bg-gray-800/30'
           }
           ${items.length === 0 ? 'flex items-center justify-center' : ''}
         `}
@@ -161,7 +161,7 @@ export function CompactKanbanColumn({
   return (
     <div className="w-64 flex-shrink-0 h-full flex flex-col">
       {/* Header compacto */}
-      <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-lg">
+      <div className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded-t-lg">
         <div className="flex items-center space-x-2">
           <div 
             className="w-2 h-2 rounded-full"
@@ -171,13 +171,13 @@ export function CompactKanbanColumn({
             {column.title}
           </span>
         </div>
-        <span className="text-xs text-gray-600 bg-gray-200 px-2 py-1 rounded">
+        <span className="text-xs text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
           {items.length}
         </span>
       </div>
 
       {/* Lista compacta de itens */}
-      <div className="bg-white rounded-b-lg flex-1 overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg flex-1 overflow-y-auto">
         {items.length === 0 ? (
           <div className="p-4 text-center text-gray-400 text-sm">
             Vazio
@@ -188,13 +188,13 @@ export function CompactKanbanColumn({
               <div
                 key={item.id}
                 onClick={() => onItemClick(item)}
-                className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
               >
-                <div className="text-sm font-medium text-gray-900 truncate mb-1">
+                <div className="text-sm font-medium text-gray-900 dark:text-white truncate mb-1">
                   {'title' in item ? item.title : 'name' in item ? item.name : ''}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
                     {viewType === 'status' ? 'Projeto' : 'Tarefa'}
                   </span>
                   {item.priority && (

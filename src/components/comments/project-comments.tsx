@@ -20,16 +20,17 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
     deleteComment
   } = useComments(projectId)
 
-  const handleCreateComment = async (content: string, parentId?: string, type: CommentType = 'comment') => {
+  const handleCreateComment = async (content: string, parentId?: string, mentionedUsers?: string[], type: CommentType = 'comment') => {
     await createComment({
       content,
       type,
-      parent_id: parentId || undefined
+      parent_id: parentId || undefined,
+      mentioned_users: mentionedUsers
     })
   }
 
-  const handleUpdateComment = async (commentId: string, content: string) => {
-    await updateComment(commentId, { content })
+  const handleUpdateComment = async (commentId: string, content: string, mentionedUsers?: string[]) => {
+    await updateComment(commentId, { content, mentioned_users: mentionedUsers })
   }
 
   const handleDeleteComment = async (commentId: string) => {
@@ -45,6 +46,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
       onUpdateComment={handleUpdateComment}
       onDeleteComment={handleDeleteComment}
       currentUserId={user?.id}
+      projectId={projectId}
     />
   )
 }
