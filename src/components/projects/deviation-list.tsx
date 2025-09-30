@@ -19,8 +19,7 @@ import {
   Filter,
   Plus,
   Search,
-  Trash2,
-  User
+  Trash2
 } from 'lucide-react'
 import { DeviationModal } from './deviation-modal'
 import type { ProjectDeviationWithUsers, DeviationStatus } from '@/types/database'
@@ -192,10 +191,6 @@ export function DeviationList({ projectId, deviations, onRefresh }: DeviationLis
                       >
                         {deviation.status}
                       </Badge>
-                      <span className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {deviation.requested_by_user?.full_name || 'Usuário não encontrado'}
-                      </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {formatDate(deviation.created_at)}

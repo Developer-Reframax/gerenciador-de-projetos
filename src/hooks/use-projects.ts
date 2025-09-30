@@ -175,9 +175,9 @@ export function useProjectStats() {
   const [stats, setStats] = useState<ProjectStats>({
     total: 0,
     completed: 0,
-    active: 0,
-    planning: 0,
-    on_hold: 0,
+    in_progress: 0,
+    not_started: 0,
+    paused: 0,
     cancelled: 0,
     completion_rate: 0
   })

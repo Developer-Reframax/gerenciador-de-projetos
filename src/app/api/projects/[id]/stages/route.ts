@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '../../../../../lib/supabase-server'
 import { cookies } from 'next/headers'
 
+interface User {
+  id: string
+  full_name: string | null
+  avatar_url: string | null
+}
+
 // GET /api/projects/[id]/stages - List all stages for a project
 export async function GET(
   request: NextRequest,
@@ -122,6 +128,31 @@ export async function GET(
       console.error('Erro ao buscar impedimentos:', impedimentsError)
     }
 
+    // Coletar todos os assignee_ids únicos das tarefas
+    const assigneeIds = [...new Set(
+      stages?.flatMap(stage => 
+        stage.tasks?.map(task => task.assignee_id).filter((id): id is string => id !== null) || []
+      ) || []
+    )]
+
+    console.log('DEBUG - assigneeIds coletados:', assigneeIds)
+    console.log('DEBUG - Total de assigneeIds:', assigneeIds.length)
+
+    // Buscar dados dos usuários se houver assignee_ids
+    let users: User[] = []
+    if (assigneeIds.length > 0) {
+      console.log('DEBUG - Buscando usuários para IDs:', assigneeIds)
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, full_name, avatar_url')
+        .in('id', assigneeIds)
+      
+      console.log('DEBUG - Dados dos usuários retornados:', usersData)
+      console.log('DEBUG - Erro na busca de usuários:', usersError)
+      
+      users = usersData || []
+    }
+
     // Define types for better type safety
     interface Task {
       id: string
@@ -198,7 +229,10 @@ export async function GET(
     const stagesWithSortedTasks = (stages as unknown as Stage[]).map((stage) => ({
       ...stage,
       order_index: stage.position, // Map position to order_index for frontend compatibility
-      tasks: (stage.tasks || []).sort((a, b) => a.position - b.position),
+      tasks: (stage.tasks || []).sort((a, b) => a.position - b.position).map(task => ({
+        ...task,
+        assignee: task.assignee_id ? users?.find(u => u.id === task.assignee_id) : null
+      })),
       risks: risksByStage[stage.id] || [],
       impediments: impedimentsByStage[stage.id] || []
     }))

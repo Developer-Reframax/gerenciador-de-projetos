@@ -3,23 +3,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { CalendarIcon, Edit, Save, X, Target, Layers, Tag, Plus, Building, Users } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Edit, Save, X, Plus, Target, Users, Calendar, DollarSign, Tag, UserCheck, Building, Layers } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
 import type {
-  StrategicObjective,
   StrategicPillar,
   Tag as TagType,
   Area,
   Stakeholder,
-
   ProjectStrategicInfoResponse,
   UpdateProjectStrategicForm
 } from '@/types'
@@ -35,7 +33,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [projectData, setProjectData] = useState<ProjectStrategicInfoResponse | null>(null)
-  const [objectives, setObjectives] = useState<StrategicObjective[]>([])
+
   const [pillars, setPillars] = useState<StrategicPillar[]>([])
   const [tags, setTags] = useState<TagType[]>([])
   const [areas, setAreas] = useState<Area[]>([])
@@ -66,9 +64,8 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
     setLoading(true)
     try {
       // Carregar informações estratégicas do projeto
-      const [projectRes, objectivesRes, pillarsRes, tagsRes, areasRes] = await Promise.all([
+      const [projectRes, pillarsRes, tagsRes, areasRes] = await Promise.all([
         fetch(`/api/projects/${projectId}/strategic`),
-        fetch('/api/strategic-objectives'),
         fetch('/api/strategic-pillars'),
         fetch('/api/tags'),
         fetch('/api/areas')
@@ -96,11 +93,20 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
         setLessonsLearned(projectData?.lessons_learned || '')
         setFormData({
           strategic_objective_id: projectData?.strategic_objective_id,
+          strategic_objective_text: projectData?.strategic_objective_text,
           strategic_pillar_id: projectData?.strategic_pillar_id,
           request_date: projectData?.request_date,
           committee_approval_date: projectData?.committee_approval_date,
           real_start_date: projectData?.real_start_date,
           real_end_date: projectData?.real_end_date,
+          start_date: projectData?.start_date,
+          due_date: projectData?.due_date,
+          budget: projectData?.budget,
+          owner_name: projectData?.owner_name,
+          direct_responsibles: projectData?.direct_responsibles,
+          requesting_area: projectData?.requesting_area,
+          planned_budget: projectData?.planned_budget,
+          used_budget: projectData?.used_budget,
           tag_ids: projectData?.tags?.map((tag: { id: string }) => tag.id) || [],
           area_ids: projectAreasIds,
           stakeholder_ids: stakeholders.map((stakeholder: { user_id: string }) => stakeholder.user_id) || [],
@@ -108,10 +114,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
         })
       }
 
-      if (objectivesRes.ok) {
-        const objectivesData = await objectivesRes.json()
-        setObjectives(objectivesData.data)
-      }
+
 
       if (pillarsRes.ok) {
         const pillarsData = await pillarsRes.json()
@@ -190,12 +193,24 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
     if (projectData) {
       setFormData({
         strategic_objective_id: projectData.strategic_objective_id,
+        strategic_objective_text: projectData.strategic_objective_text,
         strategic_pillar_id: projectData.strategic_pillar_id,
         request_date: projectData.request_date,
         committee_approval_date: projectData.committee_approval_date,
         real_start_date: projectData.real_start_date,
         real_end_date: projectData.real_end_date,
-        tag_ids: projectData.tags?.map((tag: { id: string }) => tag.id) || []
+        start_date: projectData.start_date,
+        due_date: projectData.due_date,
+        budget: projectData.budget,
+        owner_name: projectData.owner_name,
+        direct_responsibles: projectData.direct_responsibles,
+        requesting_area: projectData.requesting_area,
+        planned_budget: projectData.planned_budget,
+        used_budget: projectData.used_budget,
+        tag_ids: projectData.tags?.map((tag: { id: string }) => tag.id) || [],
+        area_ids: projectData.areas?.map((area: { id: string }) => area.id) || [],
+        stakeholder_ids: projectData.stakeholders?.map((stakeholder: { user_id: string }) => stakeholder.user_id) || [],
+        lessons_learned: projectData.lessons_learned || ''
       })
     }
   }
@@ -223,7 +238,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
       if (response.ok) {
         const result = await response.json()
         const newObj = result.data
-        setObjectives(prev => [...prev, newObj])
+
         setFormData(prev => ({ ...prev, strategic_objective_id: newObj.id }))
         setNewObjective({ name: '', description: '' })
         setIsCreateObjectiveOpen(false)
@@ -360,299 +375,628 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Objetivo e Pilar Estratégico */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <Target className="h-4 w-4" />
-              Objetivo Estratégico
-            </Label>
-            {isEditing ? (
-              <Select
-                value={formData.strategic_objective_id || 'none'}
-                onValueChange={(value) => {
-                  if (value === 'create-new') {
-                    setIsCreateObjectiveOpen(true)
-                  } else {
-                    setFormData(prev => ({ ...prev, strategic_objective_id: value === 'none' ? null : value }))
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione um objetivo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  {objectives.map(obj => (
-                    <SelectItem key={obj.id} value={obj.id}>
-                      {obj.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="create-new" className="text-blue-600 font-medium">
-                    <Plus className="h-4 w-4 mr-2" />
-                    + Criar Novo Objetivo
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <div className="text-sm">
-                {projectData?.strategic_objective?.name || 'Não definido'}
+        {/* Bloco 1: Informações Gerais */}
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-blue-600" />
+              Informações Gerais
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Target className="h-4 w-4" />
+                  Objetivo Estratégico *
+                </Label>
+                {isEditing ? (
+                  <Textarea
+                    placeholder="Descreva o objetivo estratégico do projeto..."
+                    value={formData.strategic_objective_text || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, strategic_objective_text: e.target.value }))}
+                    className="min-h-[100px]"
+                    required
+                  />
+                ) : (
+                  <div className="text-sm p-4 bg-muted/30 rounded-lg min-h-[100px] border">
+                    {projectData?.strategic_objective_text || 'Não definido'}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <Layers className="h-4 w-4" />
-              Pilar Estratégico
-            </Label>
-            {isEditing ? (
-              <Select
-                value={formData.strategic_pillar_id || 'none'}
-                onValueChange={(value) => {
-                  if (value === 'create-new') {
-                    setIsCreatePillarOpen(true)
-                  } else {
-                    setFormData(prev => ({ ...prev, strategic_pillar_id: value === 'none' ? null : value }))
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione um pilar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  {pillars.map(pillar => (
-                    <SelectItem key={pillar.id} value={pillar.id}>
-                      {pillar.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="create-new" className="text-blue-600 font-medium">
-                    <Plus className="h-4 w-4 mr-2" />
-                    + Criar Novo Pilar
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <div className="text-sm">
-                {projectData?.strategic_pillar?.name || 'Não definido'}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Datas Estratégicas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <CalendarIcon className="h-4 w-4" />
-              Data de Solicitação
-            </Label>
-            {isEditing ? (
-              <Input
-                type="date"
-                value={formData.request_date || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, request_date: e.target.value || null }))}
-              />
-            ) : (
-              <div className="text-sm">{formatDate(projectData?.request_date)}</div>
-            )}
-          </div>
-
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <CalendarIcon className="h-4 w-4" />
-              Data de Aprovação do Comitê
-            </Label>
-            {isEditing ? (
-              <Input
-                type="date"
-                value={formData.committee_approval_date || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, committee_approval_date: e.target.value || null }))}
-              />
-            ) : (
-              <div className="text-sm">{formatDate(projectData?.committee_approval_date)}</div>
-            )}
-          </div>
-
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <CalendarIcon className="h-4 w-4" />
-              Data Real de Início
-            </Label>
-            {isEditing ? (
-              <Input
-                type="date"
-                value={formData.real_start_date || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, real_start_date: e.target.value || null }))}
-              />
-            ) : (
-              <div className="text-sm">{formatDate(projectData?.real_start_date)}</div>
-            )}
-          </div>
-
-          <div>
-            <Label className="flex items-center gap-2 mb-2">
-              <CalendarIcon className="h-4 w-4" />
-              Data Real de Término
-            </Label>
-            {isEditing ? (
-              <Input
-                type="date"
-                value={formData.real_end_date || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, real_end_date: e.target.value || null }))}
-              />
-            ) : (
-              <div className="text-sm">{formatDate(projectData?.real_end_date)}</div>
-            )}
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div>
-          <Label className="flex items-center gap-2 mb-2">
-            <Tag className="h-4 w-4" />
-            Tags
-          </Label>
-          {isEditing ? (
-            <div className="space-y-2">
-              <div className="flex flex-wrap gap-2">
-                {tags.map(tag => (
-                  <Badge
-                    key={tag.id}
-                    variant={formData.tag_ids?.includes(tag.id) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      const currentTags = formData.tag_ids || []
-                      const newTags = currentTags.includes(tag.id)
-                        ? currentTags.filter(id => id !== tag.id)
-                        : [...currentTags, tag.id]
-                      setFormData(prev => ({ ...prev, tag_ids: newTags }))
-                    }}
-                    style={{
-                      backgroundColor: formData.tag_ids?.includes(tag.id) && tag.color ? tag.color : undefined
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Layers className="h-4 w-4" />
+                  Pilar Estratégico
+                </Label>
+                {isEditing ? (
+                  <Select
+                    value={formData.strategic_pillar_id || 'none'}
+                    onValueChange={(value) => {
+                      if (value === 'create-new') {
+                        setIsCreatePillarOpen(true)
+                      } else {
+                        setFormData(prev => ({ ...prev, strategic_pillar_id: value === 'none' ? null : value }))
+                      }
                     }}
                   >
-                    {tag.name}
-                  </Badge>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCreateTagOpen(true)}
-                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Criar Nova Tag
-                </Button>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione um pilar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {pillars.map(pillar => (
+                        <SelectItem key={pillar.id} value={pillar.id}>
+                          {pillar.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="create-new" className="text-blue-600 font-medium">
+                        <Plus className="h-4 w-4 mr-2" />
+                        + Criar Novo Pilar
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">
+                    {projectData?.strategic_pillar?.name || 'Não definido'}
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {projectData?.tags?.length ? (
-                projectData.tags.map((tag: { id: string; name: string; color?: string }) => (
-                  <Badge
-                    key={tag.id}
-                    style={{ backgroundColor: tag.color || undefined }}
-                  >
-                    {tag.name}
-                  </Badge>
-                ))
-              ) : (
-                <span className="text-sm text-gray-500">Nenhuma tag definida</span>
-              )}
-            </div>
-          )}
-        </div>
 
-        {/* Áreas */}
-        <div className="space-y-4">
-          <Label className="flex items-center gap-2 mb-2">
-            <Building className="h-4 w-4" />
-            Áreas
-          </Label>
-          
-          {isEditing ? (
-            <AreasManager
-              selectedAreaIds={formData.area_ids || []}
-              onSelectionChange={(areaIds) => {
-                setFormData(prev => ({ ...prev, area_ids: areaIds }))
-              }}
-            />
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {areas.length > 0 ? (
-                areas.map((area) => (
-                  <Badge
-                    key={area.id}
-                    variant="secondary"
-                    className="px-3 py-1"
-                    style={{ backgroundColor: area.color + '20', color: area.color }}
-                  >
-                    {area.name}
-                  </Badge>
-                ))
+            <div>
+              <Label className="flex items-center gap-2 mb-2 font-medium">
+                <Building className="h-4 w-4" />
+                Área Demandante *
+              </Label>
+              {isEditing ? (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Digite uma área e pressione Enter para adicionar"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const value = e.currentTarget.value.trim()
+                        if (value && !(formData.requesting_area || []).includes(value)) {
+                          setFormData(prev => ({
+                            ...prev,
+                            requesting_area: [...(prev.requesting_area || []), value]
+                          }))
+                          e.currentTarget.value = ''
+                        }
+                      }
+                    }}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {(formData.requesting_area || []).map((area, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            requesting_area: (prev.requesting_area || []).filter((_, i) => i !== index)
+                          }))
+                        }}
+                      >
+                        {area} ×
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Nenhuma área selecionada</p>
+                <div className="flex flex-wrap gap-2">
+                  {(projectData?.requesting_area || []).length > 0 ? (
+                    (projectData?.requesting_area || []).map((area, index) => (
+                      <Badge key={index} variant="secondary">
+                        {area}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Nenhuma área definida</span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Stakeholders */}
-        <div className="space-y-4">
-          <Label className="flex items-center gap-2 mb-2">
-            <Users className="h-4 w-4" />
-            Stakeholders
-          </Label>
-          
-          {isEditing ? (
-            <StakeholdersManager
-              selectedStakeholderIds={formData.stakeholder_ids || []}
-              onSelectionChange={(stakeholderIds) => {
-                setFormData(prev => ({ ...prev, stakeholder_ids: stakeholderIds }))
-              }}
-            />
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {stakeholders.length > 0 ? (
-                stakeholders.map((stakeholder, index) => (
-                  <Badge key={stakeholder.user_id || `stakeholder-${index}`} variant="secondary" className="px-3 py-1">
-                    {stakeholder.user_name}
-                  </Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhum stakeholder selecionado</p>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Bloco 2: Responsabilidades */}
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-green-600" />
+              Responsabilidades
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <UserCheck className="h-4 w-4" />
+                  Proprietário *
+                </Label>
+                {isEditing ? (
+                  <Input
+                    placeholder="Nome do proprietário do projeto"
+                    value={formData.owner_name || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, owner_name: e.target.value }))}
+                    required
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">
+                    {projectData?.owner_name || 'Não definido'}
+                  </div>
+                )}
+              </div>
 
-        {/* Lições Aprendidas */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Lições Aprendidas</h3>
-          </div>
-          
-          {isEditing ? (
-            <Textarea
-              placeholder="Descreva as lições aprendidas do projeto..."
-              value={formData.lessons_learned || ''}
-              onChange={(e) => {
-                setFormData(prev => ({ ...prev, lessons_learned: e.target.value }))
-              }}
-              className="min-h-[120px]"
-            />
-          ) : (
-            <div className="p-4 bg-muted/50 rounded-lg">
-              {lessonsLearned ? (
-                <p className="text-sm whitespace-pre-wrap">{lessonsLearned}</p>
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Users className="h-4 w-4" />
+                  Responsáveis Diretos *
+                </Label>
+                {isEditing ? (
+                  <Input
+                    placeholder="Nomes dos responsáveis diretos"
+                    value={formData.direct_responsibles || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, direct_responsibles: e.target.value }))}
+                    required
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">
+                    {projectData?.direct_responsibles || 'Não definido'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bloco 3: Orçamento */}
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <DollarSign className="h-5 w-5 text-yellow-600" />
+              Orçamento
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <DollarSign className="h-4 w-4" />
+                  Orçamento Previsto (R$) *
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={formData.planned_budget || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, planned_budget: e.target.value ? parseFloat(e.target.value) : null }))}
+                    required
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border font-medium">
+                    {projectData?.planned_budget ? `R$ ${projectData.planned_budget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Não definido'}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <DollarSign className="h-4 w-4" />
+                  Orçamento Aprovado (R$)
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={formData.budget || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, budget: e.target.value ? parseFloat(e.target.value) : null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border font-medium">
+                    {projectData?.budget ? `R$ ${projectData.budget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Não informado'}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <DollarSign className="h-4 w-4" />
+                  Orçamento Utilizado (R$)
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={formData.used_budget || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, used_budget: e.target.value ? parseFloat(e.target.value) : null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border font-medium">
+                    {projectData?.used_budget ? `R$ ${projectData.used_budget.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Não informado'}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Indicador de Utilização do Orçamento */}
+            {projectData?.planned_budget && projectData?.used_budget && (
+              <div className="mt-4 p-4 bg-muted/20 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Utilização do Orçamento</span>
+                  <span className="text-sm font-bold">
+                    {((projectData.used_budget / projectData.planned_budget) * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-yellow-600 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${Math.min(((projectData.used_budget / projectData.planned_budget) * 100), 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Bloco 4: Indicadores */}
+        <Card className="border-l-4 border-l-purple-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-purple-600" />
+              Indicadores de Progresso
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-3xl font-bold text-blue-600 mb-1">
+                  {projectData?.total_tasks || 0}
+                </div>
+                <div className="text-sm font-medium text-blue-700">Total de Tarefas</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="text-3xl font-bold text-green-600 mb-1">
+                  {projectData?.completed_tasks || 0}
+                </div>
+                <div className="text-sm font-medium text-green-700">Tarefas Concluídas</div>
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="text-3xl font-bold text-orange-600 mb-1">
+                  {projectData?.pending_tasks || 0}
+                </div>
+                <div className="text-sm font-medium text-orange-700">Tarefas Pendentes</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="text-3xl font-bold text-purple-600 mb-1">
+                  {projectData?.progress_percentage || 0}%
+                </div>
+                <div className="text-sm font-medium text-purple-700">Progresso Geral</div>
+              </div>
+            </div>
+            
+            {/* Barra de Progresso Visual */}
+            <div className="mt-6 p-4 bg-muted/20 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Progresso do Projeto</span>
+                <span className="text-sm font-bold">
+                  {projectData?.progress_percentage || 0}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
+                  style={{ width: `${Math.min(projectData?.progress_percentage || 0, 100)}%` }}
+                ></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bloco 5: Datas Estratégicas */}
+        <Card className="border-l-4 border-l-indigo-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="h-5 w-5 text-indigo-600" />
+              Datas Estratégicas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Data de Solicitação
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={formData.request_date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, request_date: e.target.value || null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">{formatDate(projectData?.request_date)}</div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Aprovação do Comitê
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={formData.committee_approval_date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, committee_approval_date: e.target.value || null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">{formatDate(projectData?.committee_approval_date)}</div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Início Planejado
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={formData.start_date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value || null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">{formatDate(projectData?.start_date)}</div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Término Planejado
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={formData.due_date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value || null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">{formatDate(projectData?.due_date)}</div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Início Real
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={formData.real_start_date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, real_start_date: e.target.value || null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">{formatDate(projectData?.real_start_date)}</div>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 mb-2 font-medium">
+                  <Calendar className="h-4 w-4" />
+                  Término Real
+                </Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={formData.real_end_date || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, real_end_date: e.target.value || null }))}
+                  />
+                ) : (
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">{formatDate(projectData?.real_end_date)}</div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bloco 6: Tags e Áreas */}
+        <Card className="border-l-4 border-l-teal-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Tag className="h-5 w-5 text-teal-600" />
+              Tags e Áreas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Tags */}
+            <div>
+              <Label className="flex items-center gap-2 mb-3 font-medium">
+                <Tag className="h-4 w-4" />
+                Tags do Projeto
+              </Label>
+              {isEditing ? (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-3 bg-muted/30 rounded-lg border">
+                    {tags.filter(tag => formData.tag_ids?.includes(tag.id)).map(tag => (
+                      <Badge
+                        key={tag.id}
+                        variant="default"
+                        className="cursor-pointer"
+                        onClick={() => {
+                          const currentTags = formData.tag_ids || []
+                          const newTags = currentTags.filter(id => id !== tag.id)
+                          setFormData(prev => ({ ...prev, tag_ids: newTags }))
+                        }}
+                        style={{
+                          backgroundColor: tag.color || undefined
+                        }}
+                      >
+                        {tag.name} ×
+                      </Badge>
+                    ))}
+                    {(!formData.tag_ids || formData.tag_ids.length === 0) && (
+                      <span className="text-sm text-muted-foreground">Nenhuma tag selecionada</span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.filter(tag => !formData.tag_ids?.includes(tag.id)).map(tag => (
+                      <Badge
+                        key={tag.id}
+                        variant="outline"
+                        className="cursor-pointer"
+                        onClick={() => {
+                          const currentTags = formData.tag_ids || []
+                          const newTags = [...currentTags, tag.id]
+                          setFormData(prev => ({ ...prev, tag_ids: newTags }))
+                        }}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsCreateTagOpen(true)}
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Criar Nova Tag
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Nenhuma lição aprendida registrada</p>
+                <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-3 bg-muted/30 rounded-lg border">
+                  {projectData?.tags?.length ? (
+                    projectData.tags.map((tag: { id: string; name: string; color?: string }) => (
+                      <Badge
+                        key={tag.id}
+                        style={{ backgroundColor: tag.color || undefined }}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Nenhuma tag definida</span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Áreas */}
+            <div>
+              <Label className="flex items-center gap-2 mb-3 font-medium">
+                <Building className="h-4 w-4" />
+                Áreas do Projeto
+              </Label>
+              
+              {isEditing ? (
+                <AreasManager
+                  selectedAreaIds={formData.area_ids || []}
+                  onSelectionChange={(areaIds) => {
+                    setFormData(prev => ({ ...prev, area_ids: areaIds }))
+                  }}
+                />
+              ) : (
+                <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-3 bg-muted/30 rounded-lg border">
+                  {areas.length > 0 ? (
+                    areas.map((area) => (
+                      <Badge
+                        key={area.id}
+                        variant="secondary"
+                        className="px-3 py-1"
+                        style={{ backgroundColor: area.color + '20', color: area.color }}
+                      >
+                        {area.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Nenhuma área selecionada</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bloco 7: Stakeholders e Lições Aprendidas */}
+        <Card className="border-l-4 border-l-orange-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-orange-600" />
+              Stakeholders e Lições Aprendidas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Stakeholders */}
+            <div>
+              <Label className="flex items-center gap-2 mb-3 font-medium">
+                <Users className="h-4 w-4" />
+                Stakeholders do Projeto
+              </Label>
+              
+              {isEditing ? (
+                <StakeholdersManager
+                  selectedStakeholderIds={formData.stakeholder_ids || []}
+                  onSelectionChange={(stakeholderIds) => {
+                    setFormData(prev => ({ ...prev, stakeholder_ids: stakeholderIds }))
+                  }}
+                />
+              ) : (
+                <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-3 bg-muted/30 rounded-lg border">
+                  {stakeholders.length > 0 ? (
+                    stakeholders.map((stakeholder, index) => (
+                      <Badge key={stakeholder.user_id || `stakeholder-${index}`} variant="secondary" className="px-3 py-1">
+                        {stakeholder.user_name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Nenhum stakeholder selecionado</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Lições Aprendidas */}
+            <div>
+              <Label className="flex items-center gap-2 mb-3 font-medium">
+                <Target className="h-4 w-4" />
+                Lições Aprendidas
+              </Label>
+              
+              {isEditing ? (
+                <Textarea
+                  placeholder="Descreva as lições aprendidas do projeto..."
+                  value={formData.lessons_learned || ''}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, lessons_learned: e.target.value }))
+                  }}
+                  className="min-h-[120px] resize-none"
+                />
+              ) : (
+                <div className="text-sm whitespace-pre-wrap p-3 bg-muted/30 rounded-lg border min-h-[120px]">
+                  {lessonsLearned ? (
+                    lessonsLearned
+                  ) : (
+                    <span className="text-muted-foreground">Nenhuma lição aprendida registrada</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </CardContent>
     </Card>
 

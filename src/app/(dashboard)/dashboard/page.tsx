@@ -406,14 +406,12 @@ export default function DashboardPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold">{project.name}</h3>
-                      <Badge variant={project.status === "active" ? "default" : "secondary"}>
-                        {project.status === "active" ? "Ativo" : 
+                      <Badge variant={project.status === "in_progress" ? "default" : "secondary"}>
+                        {project.status === "in_progress" ? "Em execução" : 
                          project.status === "completed" ? "Concluído" : 
-                         project.status === "planning" ? "Planejamento" :
-                         project.status === "on_hold" ? "Pausado" :
-                         project.status === "cancelled" ? "Cancelado" :
-                         project.status === "archived" ? "Arquivado" :
-                         project.status === "blocked" ? "Bloqueado" : "Desconhecido"}
+                         project.status === "not_started" ? "Não Iniciado" :
+                         project.status === "paused" ? "Paralisado" :
+                         project.status === "cancelled" ? "Cancelado" : "Desconhecido"}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{project.description}</p>

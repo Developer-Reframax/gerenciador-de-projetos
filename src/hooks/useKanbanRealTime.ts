@@ -5,11 +5,16 @@ import type {
   KanbanProject,
   KanbanColumn,
   KanbanViewType,
-  KanbanData,
-  KanbanProjectData,
-  KanbanAssigneeData,
-  KanbanProjectStatusData
+  KanbanData
 } from '@/types/kanban';
+
+// Interface para type assertion mais flexível
+interface FlexibleKanbanData {
+  [key: string]: unknown
+  columns?: KanbanColumn[]
+  assignee_columns?: KanbanColumn[]
+  status_columns?: KanbanColumn[]
+}
 
 type RealtimeNotification = {
   type: string;
@@ -298,9 +303,9 @@ function addTaskToData(data: KanbanData, task: KanbanTask, viewType: KanbanViewT
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('assignee_columns' in data) {
+  } else if ('assignee_columns' in data && data.assignee_columns) {
     columns = data.assignee_columns;
   }
   
@@ -316,9 +321,9 @@ function addTaskToData(data: KanbanData, task: KanbanTask, viewType: KanbanViewT
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('assignee_columns' in data) {
-    (newData as KanbanAssigneeData).assignee_columns = updatedColumns;
+    (newData as FlexibleKanbanData).assignee_columns = updatedColumns;
   }
   
   return newData;
@@ -329,9 +334,9 @@ function updateTaskInData(data: KanbanData, newTask: KanbanTask, oldTask: Kanban
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('assignee_columns' in data) {
+  } else if ('assignee_columns' in data && data.assignee_columns) {
     columns = data.assignee_columns;
   }
   
@@ -343,9 +348,9 @@ function updateTaskInData(data: KanbanData, newTask: KanbanTask, oldTask: Kanban
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('assignee_columns' in data) {
-    (newData as KanbanAssigneeData).assignee_columns = updatedColumns;
+    (newData as FlexibleKanbanData).assignee_columns = updatedColumns;
   }
   
   // Adicionar na nova posição
@@ -357,9 +362,9 @@ function removeTaskFromData(data: KanbanData, task: KanbanTask): KanbanData {
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('assignee_columns' in data) {
+  } else if ('assignee_columns' in data && data.assignee_columns) {
     columns = data.assignee_columns;
   }
   
@@ -370,9 +375,9 @@ function removeTaskFromData(data: KanbanData, task: KanbanTask): KanbanData {
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('assignee_columns' in data) {
-    (newData as KanbanAssigneeData).assignee_columns = updatedColumns;
+    (newData as FlexibleKanbanData).assignee_columns = updatedColumns;
   }
   
   return newData;
@@ -383,9 +388,9 @@ function addProjectToData(data: KanbanData, project: KanbanProject): KanbanData 
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('status_columns' in data) {
+  } else if ('status_columns' in data && data.status_columns) {
     columns = data.status_columns;
   }
   
@@ -402,9 +407,9 @@ function addProjectToData(data: KanbanData, project: KanbanProject): KanbanData 
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('status_columns' in data) {
-    (newData as KanbanProjectStatusData).status_columns = updatedColumns;
+    (newData as FlexibleKanbanData).status_columns = updatedColumns;
   }
   
   return newData;
@@ -415,9 +420,9 @@ function updateProjectInData(data: KanbanData, newProject: KanbanProject): Kanba
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('status_columns' in data) {
+  } else if ('status_columns' in data && data.status_columns) {
     columns = data.status_columns;
   }
   
@@ -429,9 +434,9 @@ function updateProjectInData(data: KanbanData, newProject: KanbanProject): Kanba
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('status_columns' in data) {
-    (newData as KanbanProjectStatusData).status_columns = updatedColumns;
+    (newData as FlexibleKanbanData).status_columns = updatedColumns;
   }
   
   // Adicionar na nova posição
@@ -443,9 +448,9 @@ function removeProjectFromData(data: KanbanData, project: KanbanProject): Kanban
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('status_columns' in data) {
+  } else if ('status_columns' in data && data.status_columns) {
     columns = data.status_columns;
   }
   
@@ -456,9 +461,9 @@ function removeProjectFromData(data: KanbanData, project: KanbanProject): Kanban
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('status_columns' in data) {
-    (newData as KanbanProjectStatusData).status_columns = updatedColumns;
+    (newData as FlexibleKanbanData).status_columns = updatedColumns;
   }
   
   return newData;
@@ -469,9 +474,9 @@ function updateProjectMetadataInTasks(data: KanbanData, project: KanbanProject):
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('assignee_columns' in data) {
+  } else if ('assignee_columns' in data && data.assignee_columns) {
     columns = data.assignee_columns;
   }
   
@@ -490,9 +495,9 @@ function updateProjectMetadataInTasks(data: KanbanData, project: KanbanProject):
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('assignee_columns' in data) {
-    (newData as KanbanAssigneeData).assignee_columns = updatedColumns;
+    (newData as FlexibleKanbanData).assignee_columns = updatedColumns;
   }
   
   return newData;
@@ -503,9 +508,9 @@ function removeTasksByProject(data: KanbanData, projectId: string): KanbanData {
   
   // Determinar qual tipo de colunas usar
   let columns: KanbanColumn[] = [];
-  if ('columns' in data) {
+  if ('columns' in data && data.columns) {
     columns = data.columns;
-  } else if ('assignee_columns' in data) {
+  } else if ('assignee_columns' in data && data.assignee_columns) {
     columns = data.assignee_columns;
   }
   
@@ -516,9 +521,9 @@ function removeTasksByProject(data: KanbanData, projectId: string): KanbanData {
   
   // Atualizar as colunas corretas
   if ('columns' in data) {
-    (newData as KanbanProjectData).columns = updatedColumns;
+    (newData as FlexibleKanbanData).columns = updatedColumns;
   } else if ('assignee_columns' in data) {
-    (newData as KanbanAssigneeData).assignee_columns = updatedColumns;
+    (newData as FlexibleKanbanData).assignee_columns = updatedColumns;
   }
   
   return newData;

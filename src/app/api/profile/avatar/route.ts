@@ -30,17 +30,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Arquivo muito grande. Máximo 5MB' }, { status: 400 })
     }
 
-    // Gerar nome único para o arquivo
+    // Gerar nome do arquivo seguindo a estrutura RLS: {user_id}/avatar.{ext}
     const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
-    const filePath = `avatars/${fileName}`
+    const filePath = `${user.id}/avatar.${fileExt}`
+
+    // Remover avatar anterior se existir
+    const { data: existingFiles } = await supabase.storage
+      .from('avatars')
+      .list(user.id)
+
+    if (existingFiles && existingFiles.length > 0) {
+      const filesToRemove = existingFiles.map(file => `${user.id}/${file.name}`)
+      await supabase.storage
+        .from('avatars')
+        .remove(filesToRemove)
+    }
 
     // Upload para o Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: true
       })
 
     if (uploadError) {

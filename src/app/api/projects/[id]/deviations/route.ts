@@ -70,12 +70,6 @@ export async function GET(
       .from('project_deviations')
       .select(`
         *,
-        requested_by_user:users!project_deviations_requested_by_fkey(
-          id,
-          full_name,
-          email,
-          avatar_url
-        ),
         approver_user:users!project_deviations_approver_id_fkey(
           id,
           full_name,
@@ -99,8 +93,6 @@ export async function GET(
       id: deviation.id,
       project_id: deviation.project_id,
       description: deviation.description,
-      was_requested: deviation.was_requested,
-      requested_by: deviation.requested_by,
       evaluation_criteria: deviation.evaluation_criteria,
       impact_type: deviation.impact_type,
       requires_approval: deviation.requires_approval,
@@ -110,7 +102,6 @@ export async function GET(
       created_at: deviation.created_at,
       approved_at: deviation.approved_at,
       updated_at: deviation.updated_at,
-      requested_by_user: deviation.requested_by_user,
       approver_user: deviation.approver_user
     }))
 
@@ -192,8 +183,6 @@ export async function POST(
     const deviationData = {
       project_id: projectId,
       description: body.description,
-      was_requested: body.was_requested || false,
-      requested_by: body.was_requested ? body.requested_by : null,
       evaluation_criteria: body.evaluation_criteria,
       impact_type: body.impact_type,
       requires_approval: body.requires_approval || false,

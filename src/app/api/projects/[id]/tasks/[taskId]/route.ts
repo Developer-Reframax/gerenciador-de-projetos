@@ -74,7 +74,6 @@ export async function GET(
         status,
         priority,
         assignee_id,
-        estimated_hours,
         position,
         stage_id,
         created_at,

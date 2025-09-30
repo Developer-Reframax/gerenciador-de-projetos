@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     let query = supabaseAdmin
       .from('projects')
       .select('id, name')
-      .eq('status', 'active')
+      .eq('status', 'in_progress')
       .is('deleted_at', null)
       .order('name', { ascending: true });
 

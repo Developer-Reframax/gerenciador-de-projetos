@@ -213,9 +213,9 @@ function TaskDetails({ task, isEditing, onChange }: TaskDetailsProps) {
   ];
   
   const priorityOptions: Array<{ value: string; label: string; color: string }> = [
-    { value: 'high', label: 'Alta', color: 'text-red-600' },
-    { value: 'medium', label: 'Média', color: 'text-yellow-600' },
-    { value: 'low', label: 'Baixa', color: 'text-green-600' }
+    { value: 'priority', label: 'Prioritário', color: 'text-red-600' },
+    { value: 'important', label: 'Importante', color: 'text-yellow-600' },
+    { value: 'tactical', label: 'Tático', color: 'text-green-600' }
   ];
   
   return (
@@ -290,7 +290,7 @@ function TaskDetails({ task, isEditing, onChange }: TaskDetailsProps) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Flag className="inline h-4 w-4 mr-1" />
-            Prioridade
+            Classificação – Prioridade Estratégica
           </label>
           {isEditing ? (
             <select
@@ -402,17 +402,17 @@ interface ProjectDetailsProps {
 
 function ProjectDetails({ project, isEditing, onChange }: ProjectDetailsProps) {
   const statusOptions: Array<{ value: string; label: string; icon: React.ReactNode }> = [
-    { value: 'planning', label: 'Planejamento', icon: <Circle className="h-4 w-4" /> },
-    { value: 'active', label: 'Ativo', icon: <Clock className="h-4 w-4" /> },
-    { value: 'on_hold', label: 'Em Espera', icon: <AlertCircle className="h-4 w-4" /> },
+    { value: 'not_started', label: 'Não Iniciado', icon: <Circle className="h-4 w-4" /> },
+    { value: 'in_progress', label: 'Em Progresso', icon: <Clock className="h-4 w-4" /> },
+    { value: 'paused', label: 'Pausado', icon: <AlertCircle className="h-4 w-4" /> },
     { value: 'completed', label: 'Concluído', icon: <CheckCircle className="h-4 w-4" /> },
     { value: 'cancelled', label: 'Cancelado', icon: <X className="h-4 w-4" /> }
   ];
   
   const priorityOptions: Array<{ value: string; label: string; color: string }> = [
-    { value: 'high', label: 'Alta', color: 'text-red-600' },
-    { value: 'medium', label: 'Média', color: 'text-yellow-600' },
-    { value: 'low', label: 'Baixa', color: 'text-green-600' }
+    { value: 'priority', label: 'Prioritário', color: 'text-red-600' },
+    { value: 'important', label: 'Importante', color: 'text-yellow-600' },
+    { value: 'tactical', label: 'Tático', color: 'text-green-600' }
   ];
   
   return (
@@ -487,7 +487,7 @@ function ProjectDetails({ project, isEditing, onChange }: ProjectDetailsProps) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Flag className="inline h-4 w-4 mr-1" />
-            Prioridade
+            Classificação – Prioridade Estratégica
           </label>
           {isEditing ? (
             <select

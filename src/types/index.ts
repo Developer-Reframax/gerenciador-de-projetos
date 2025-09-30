@@ -14,8 +14,8 @@ export * from './notifications'
 export interface CreateProjectForm {
   name: string
   description?: string
-  status: 'planning' | 'active' | 'completed' | 'on_hold'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
+  status: 'not_started' | 'in_progress' | 'completed' | 'paused' | 'cancelled'
+  priority: 'tactical' | 'important' | 'priority'
   start_date?: string
   end_date?: string
   team_members?: string[]
@@ -25,7 +25,7 @@ export interface CreateTaskForm {
   title: string
   description?: string
   status: 'todo' | 'in_progress' | 'completed'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
+  priority: 'tactical' | 'important' | 'priority'
   estimated_hours?: number
   project_id: string
   assigned_to?: string
@@ -89,15 +89,15 @@ export interface ImpedimentCardProps {
 
 // Tipos para filtros e ordenação
 export interface ProjectFilters {
-  status?: 'planning' | 'active' | 'completed' | 'on_hold'
-  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  status?: 'not_started' | 'in_progress' | 'completed' | 'paused' | 'cancelled'
+  priority?: 'tactical' | 'important' | 'priority'
   owner_id?: string
   search?: string
 }
 
 export interface TaskFilters {
   status?: 'todo' | 'in_progress' | 'completed'
-  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  priority?: 'tactical' | 'important' | 'priority'
   assigned_to?: string
   project_id?: string
   search?: string
@@ -245,11 +245,20 @@ export interface CreateTagForm {
 
 export interface UpdateProjectStrategicForm {
   strategic_objective_id?: string | null
+  strategic_objective_text?: string | null
   strategic_pillar_id?: string | null
   request_date?: string | null
   committee_approval_date?: string | null
+  start_date?: string | null
+  due_date?: string | null
   real_start_date?: string | null
   real_end_date?: string | null
+  budget?: number | null
+  owner_name?: string | null
+  direct_responsibles?: string | null
+  requesting_area?: string[] | null
+  planned_budget?: number | null
+  used_budget?: number | null
   tag_ids?: string[]
   area_ids?: string[]
   stakeholder_ids?: string[]
@@ -296,17 +305,31 @@ export interface ProjectStrategicInfoResponse {
   id: string
   name: string
   strategic_objective_id?: string | null
+  strategic_objective_text?: string | null
   strategic_pillar_id?: string | null
   request_date?: string | null
   committee_approval_date?: string | null
+  start_date?: string | null
+  due_date?: string | null
   real_start_date?: string | null
   real_end_date?: string | null
+  budget?: number | null
+  owner_name?: string | null
+  direct_responsibles?: string | null
+  requesting_area?: string[] | null
+  planned_budget?: number | null
+  used_budget?: number | null
   strategic_objective?: StrategicObjective | null
   strategic_pillar?: StrategicPillar | null
   tags: Tag[]
   areas: Area[]
   stakeholders: Stakeholder[]
   lessons_learned?: string | null
+  // Indicadores informativos (não editáveis)
+  total_tasks?: number
+  completed_tasks?: number
+  pending_tasks?: number
+  progress_percentage?: number
   created_at: string
   updated_at: string
 }
@@ -421,7 +444,7 @@ export interface WorkItem {
   title: string
   description?: string
   status: string
-  priority: 'low' | 'medium' | 'high' | 'critical' | 'urgent'
+  priority: 'tactical' | 'important' | 'priority'
   type: 'task' | 'risk' | 'impediment'
   stage_id?: string
   project_id: string

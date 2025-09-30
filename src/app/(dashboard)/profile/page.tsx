@@ -13,7 +13,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { useAuth } from '@/contexts/auth-context'
 import { apiClient } from '@/lib/api-client'
 import { User, Camera, Lock, Palette, Save, Loader2 } from 'lucide-react'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 interface UserProfile {
   id: string

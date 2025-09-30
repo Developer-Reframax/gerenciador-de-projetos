@@ -199,9 +199,9 @@ function getColumns(data: KanbanData | null): KanbanColumnType[] {
   // Se data é um array (lista de projetos), criar colunas padrão com projetos filtrados por status
   if (Array.isArray(data)) {
     const defaultColumns = [
-      { id: 'planning', title: 'Planejamento', color: '#f59e0b', order: 1 },
-      { id: 'active', title: 'Em Andamento', color: '#3b82f6', order: 2 },
-      { id: 'on_hold', title: 'Em Espera', color: '#ef4444', order: 3 },
+      { id: 'not_started', title: 'Não Iniciado', color: '#f59e0b', order: 1 },
+      { id: 'in_progress', title: 'Em Progresso', color: '#3b82f6', order: 2 },
+      { id: 'paused', title: 'Pausado', color: '#ef4444', order: 3 },
       { id: 'completed', title: 'Concluído', color: '#10b981', order: 4 }
     ];
 

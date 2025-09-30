@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Plus, Edit, Trash2, Clock, User, Flag, CheckSquare, AlertTriangle, XCircle, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Edit, Trash2, User, Flag, CheckSquare, AlertTriangle, XCircle, ChevronDown, ChevronRight } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useProjectMembers } from '@/hooks/use-project-members'
 
 import { apiClient } from '@/lib/api-client'
@@ -123,7 +124,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
     title: '',
     description: '',
     priority: 'media' as Task['priority'],
-    estimated_hours: 1,
+    estimated_hours: 0,
     assignee_id: ''
   })
   
@@ -204,7 +205,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
   }
 
   const handleDeleteStage = async (stageId: string) => {
-    if (!confirm('Tem certeza que deseja excluir este estágio? Todas as tarefas serão removidas.')) return
+    if (!confirm('Tem certeza que deseja excluir esta etapa? Todas as tarefas serão removidas.')) return
     
     try {
       await apiClient.delete(`/projects/${projectId}/stages/${stageId}`)
@@ -214,7 +215,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
     }
   }
 
-  const handleCreateTask = async (stageId: string, taskData?: { title: string; description?: string; priority: 'baixa' | 'media' | 'alta'; estimated_hours: number; assignee_id?: string; stage_id: string }) => {
+  const handleCreateTask = async (stageId: string, taskData?: { title: string; description?: string; priority: 'baixa' | 'media' | 'alta'; assignee_id?: string; stage_id: string }) => {
     const dataToUse = taskData || taskForm
     if (!dataToUse.title?.trim()) return
     
@@ -233,13 +234,12 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
         title: dataToUse.title,
         description: dataToUse.description,
         priority: priorityMapping[dataToUse.priority] || dataToUse.priority,
-        estimated_hours: dataToUse.estimated_hours,
         assignee_id: dataToUse.assignee_id === 'none' ? null : dataToUse.assignee_id,
         order_index: taskCount
       })
       
       setIsAddingTask(null)
-      setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 1, assignee_id: '' })
+      setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 0, assignee_id: '' })
       fetchStages()
     } catch (error) {
       console.error('Error creating task:', error)
@@ -264,7 +264,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
       })
       
       setEditingTask(null)
-      setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 1, assignee_id: '' })
+      setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 0, assignee_id: '' })
       fetchStages()
     } catch (error) {
       console.error('Error updating task:', error)
@@ -422,7 +422,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
           stages: stagePositions
         })
       } catch (error) {
-        console.error('Erro ao atualizar estágio:', error)
+        console.error('Erro ao atualizar etapa:', error)
         // Reverter para o estado anterior em caso de erro
         fetchStages()
       }
@@ -652,16 +652,27 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
                                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{task.description}</p>
                                       )}
                                       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                                        {task.estimated_hours && (
-                                          <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {task.estimated_hours}h estimadas
-                                          </div>
-                                        )}
                                         {task.assignee_id && (
-                                          <div className="flex items-center gap-1">
-                                            <User className="w-3 h-3" />
-                                            {teamMembers.find((m: ProjectMember) => m.id === task.assignee_id)?.name || 'Responsável'}
+                                          <div className="flex items-center gap-2">
+                                            {(() => {
+                                              const assignee = teamMembers.find((m: ProjectMember) => m.id === task.assignee_id)
+                                              return assignee ? (
+                                                <>
+                                                  <Avatar className="h-5 w-5">
+                                                    <AvatarImage src={assignee.avatar_url || undefined} alt={assignee.name || ''} />
+                                                    <AvatarFallback className="text-xs">
+                                                      {getInitials(assignee.name || assignee.email)}
+                                                    </AvatarFallback>
+                                                  </Avatar>
+                                                  <span>{assignee.name || 'Responsável'}</span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <User className="w-3 h-3" />
+                                                  <span>Responsável</span>
+                                                </>
+                                              )
+                                            })()}
                                           </div>
                                         )}
                                       </div>
@@ -691,7 +702,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
                                             title: task.title,
                                             description: task.description || '',
                                             priority: task.priority,
-                                            estimated_hours: task.estimated_hours || 1,
+                                            estimated_hours: task.estimated_hours || 0,
                                             assignee_id: task.assignee_id || 'unassigned'
                                           })
                                         }}
@@ -858,7 +869,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
                         <Dialog open={isAddingTask === stage.id} onOpenChange={(open) => {
                           if (!open) {
                             setIsAddingTask(null)
-                            setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 1, assignee_id: '' })
+                            setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 0, assignee_id: '' })
                           }
                         }}>
                           <DialogContent className="sm:max-w-[425px]">
@@ -873,7 +884,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
                               onSubmit={(data) => handleCreateTask(stage.id, data)}
                               onCancel={() => {
                                 setIsAddingTask(null)
-                                setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 1, assignee_id: '' })
+                                setTaskForm({ title: '', description: '', priority: 'media', estimated_hours: 0, assignee_id: '' })
                               }}
                               defaultStageId={stage.id}
                             />
@@ -893,11 +904,11 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
 
       {stages.length === 0 && (
         <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Nenhum estágio criado</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">Comece criando o primeiro estágio do seu projeto.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Nenhuma etapa criada</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">Comece criando a primeira etapa do seu projeto.</p>
           <Button onClick={() => setIsAddingStage(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Criar Primeiro Estágio
+            Criar Primeira Etapa
           </Button>
         </div>
       )}
@@ -906,11 +917,11 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
       <Dialog open={isAddingStage} onOpenChange={setIsAddingStage}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Estágio</DialogTitle>
+            <DialogTitle>Adicionar Etapa</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium dark:text-gray-300">Nome do Estágio</label>
+              <label className="text-sm font-medium dark:text-gray-300">Nome da Etapa</label>
               <Input
                 value={stageForm.name}
                 onChange={(e) => setStageForm({ ...stageForm, name: e.target.value })}
@@ -922,7 +933,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
               <Textarea
                 value={stageForm.description}
                 onChange={(e) => setStageForm({ ...stageForm, description: e.target.value })}
-                placeholder="Descreva o que acontece neste estágio"
+                placeholder="Descreva o que acontece nesta etapa"
                 rows={3}
               />
             </div>
@@ -937,7 +948,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
             </div>
             <div className="flex gap-2 pt-4">
               <Button onClick={handleCreateStage} disabled={!stageForm.name.trim()}>
-                Criar Estágio
+                Criar Etapa
               </Button>
               <Button variant="outline" onClick={() => setIsAddingStage(false)}>
                 Cancelar
@@ -951,11 +962,11 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
       <Dialog open={!!editingStage} onOpenChange={() => setEditingStage(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Estágio</DialogTitle>
+            <DialogTitle>Editar Etapa</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Nome do Estágio</label>
+              <label className="text-sm font-medium">Nome da Etapa</label>
               <Input
                 value={stageForm.name}
                 onChange={(e) => setStageForm({ ...stageForm, name: e.target.value })}
@@ -967,7 +978,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
               <Textarea
                 value={stageForm.description}
                 onChange={(e) => setStageForm({ ...stageForm, description: e.target.value })}
-                placeholder="Descreva o que acontece neste estágio"
+                placeholder="Descreva o que acontece nesta etapa"
                 rows={3}
               />
             </div>
@@ -1034,20 +1045,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <label className="text-sm font-medium dark:text-gray-300">Duração (horas)</label>
-              <div className="relative">
-                <Input
-                  type="number"
-                  min="0.5"
-                  step="0.5"
-                  value={taskForm.estimated_hours}
-                  onChange={(e) => setTaskForm({ ...taskForm, estimated_hours: parseFloat(e.target.value) || 1 })}
-                  placeholder="Horas"
-                />
-                <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              </div>
-            </div>
+
             <div>
               <label className="text-sm font-medium dark:text-gray-300">Responsável</label>
               <Select
@@ -1294,7 +1292,7 @@ export function ProjectSchedule({ projectId }: ProjectScheduleProps) {
               <DialogTitle>Adicionar Novo Impedimento</DialogTitle>
             </DialogHeader>
             <ImpedimentForm
-              stages={stages}
+              stageId={isAddingImpediment}
               onSubmit={async (data) => {
                  await apiClient.post(`/projects/${projectId}/impediments`, data as unknown as Record<string, unknown>)
                   setIsAddingImpediment(null)
@@ -1402,5 +1400,14 @@ function getImpactText(impact: string): string {
     case 'muito_alto': return 'Muito Alto'
     default: return impact
   }
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 }
 

@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import { useProject } from '@/hooks/use-projects'
 import { useProjectDeviations } from '@/hooks/use-project-deviations'
+import { useProjectMembers } from '@/hooks/use-project-members'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -15,14 +16,13 @@ import { ProjectLogsTab } from '@/components/projects/project-logs-tab'
 
 import { ProjectStrategicInfo } from '@/components/projects/project-strategic-info'
 import { DeviationList } from '@/components/projects/deviation-list'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 
 export default function ProjectDetailsPage() {
   const params = useParams()
   const projectId = params?.id as string
   const { project, loading, error } = useProject(projectId)
   const { deviations, refetch: refetchDeviations } = useProjectDeviations(projectId)
+  const { members: teamMembers, loading: membersLoading } = useProjectMembers(projectId)
 
   if (loading) {
     return (
@@ -54,26 +54,22 @@ export default function ProjectDetailsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800'
+      case 'in_progress': return 'bg-green-100 text-green-800'
       case 'completed': return 'bg-blue-100 text-blue-800'
-      case 'planning': return 'bg-purple-100 text-purple-800'
-      case 'on_hold': return 'bg-yellow-100 text-yellow-800'
+      case 'not_started': return 'bg-purple-100 text-purple-800'
+      case 'paused': return 'bg-yellow-100 text-yellow-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
-      case 'blocked': return 'bg-red-100 text-red-800'
-      case 'archived': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'active': return 'Ativo'
+      case 'in_progress': return 'Em execução'
       case 'completed': return 'Concluído'
-      case 'planning': return 'Planejamento'
-      case 'on_hold': return 'Em Pausa'
+      case 'not_started': return 'Não Iniciado'
+      case 'paused': return 'Paralisado'
       case 'cancelled': return 'Cancelado'
-      case 'blocked': return 'Bloqueado'
-      case 'archived': return 'Arquivado'
       default: return 'Desconhecido'
     }
   }
@@ -133,34 +129,17 @@ export default function ProjectDetailsPage() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Prioridade:</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Classificação – Prioridade Estratégica:</span>
                   <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                    project.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    project.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    project.priority === 'priority' ? 'bg-red-100 text-red-800' :
+                    project.priority === 'important' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-green-100 text-green-800'
                   }`}>
-                    {project.priority === 'high' ? 'Alta' :
-                     project.priority === 'medium' ? 'Média' : 'Baixa'}
+                    {project.priority === 'priority' ? 'Prioritário' :
+                     project.priority === 'important' ? 'Importante' : 'Tático'}
                   </span>
                 </div>
-                <div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Data de Início:</span>
-                  <span className="ml-2 text-sm dark:text-gray-300">
-                     {project.start_date ? format(new Date(project.start_date), 'dd/MM/yyyy', { locale: ptBR }) : 'Não definida'}
-                   </span>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Data de Término:</span>
-                  <span className="ml-2 text-sm dark:text-gray-300">
-                     {project.due_date ? format(new Date(project.due_date), 'dd/MM/yyyy', { locale: ptBR }) : 'Não definida'}
-                   </span>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Orçamento:</span>
-                  <span className="ml-2 text-sm dark:text-gray-300">
-                     {project.budget ? `R$ ${project.budget.toLocaleString('pt-BR')}` : 'Não definido'}
-                   </span>
-                </div>
+
               </div>
             </div>
 
@@ -179,10 +158,26 @@ export default function ProjectDetailsPage() {
 
                 {project.team && (
                   <div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Equipe:</span>
-                    <span className="ml-2 text-sm dark:text-gray-300">{project.team.name}</span>
-                    {project.team.description && (
-                      <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">{project.team.description}</div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Membros da Equipe:</span>
+                    {membersLoading ? (
+                      <div className="ml-2 text-sm text-gray-500 dark:text-gray-400">Carregando...</div>
+                    ) : teamMembers && teamMembers.length > 0 ? (
+                      <div className="mt-2 space-y-2">
+                        {teamMembers.map((member) => (
+                          <div key={member.id} className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="text-sm font-medium dark:text-gray-300">
+                              {member.name || member.email}
+                            </div>
+                            {member.name && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {member.email}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="ml-2 text-sm text-gray-500 dark:text-gray-400">Nenhum membro encontrado</div>
                     )}
                   </div>
                 )}

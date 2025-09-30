@@ -19,6 +19,7 @@ interface CommentListProps {
   onDeleteComment: (commentId: string) => Promise<void>
   currentUserId?: string
   projectId: string
+  disableMentions?: boolean
 }
 
 export function CommentList({
@@ -29,7 +30,8 @@ export function CommentList({
   onUpdateComment,
   onDeleteComment,
   currentUserId,
-  projectId
+  projectId,
+  disableMentions = false
 }: CommentListProps) {
   const [showForm, setShowForm] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
@@ -120,6 +122,7 @@ export function CommentList({
               placeholder="Escreva seu comentário..."
               submitLabel="Comentar"
               projectId={projectId}
+              disableMentions={disableMentions}
             />
           </div>
         )}
@@ -156,6 +159,7 @@ export function CommentList({
                       placeholder={`Respondendo a ${comment.author.user_metadata.full_name || comment.author.email}...`}
                       submitLabel="Responder"
                       projectId={projectId}
+                      disableMentions={disableMentions}
                     />
                   </div>
                 )}

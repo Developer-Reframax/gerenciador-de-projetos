@@ -263,14 +263,14 @@ export function CompactKanbanCard({ item, onClick }: CompactKanbanCardProps) {
 
 function getPriorityColor(priority: string): string {
   switch (priority.toLowerCase()) {
-    case 'high':
-    case 'alta':
+    case 'priority':
+    case 'prioritário':
       return 'text-red-500';
-    case 'medium':
-    case 'média':
+    case 'important':
+    case 'importante':
       return 'text-yellow-500';
-    case 'low':
-    case 'baixa':
+    case 'tactical':
+    case 'tático':
       return 'text-green-500';
     default:
       return 'text-gray-500';
@@ -284,12 +284,16 @@ function getStatusIcon(status: string, className: string = 'h-4 w-4') {
     case 'concluído':
       return <CheckCircle2 className={`${className} text-green-500`} />;
     case 'in_progress':
-    case 'active':
-    case 'em_andamento':
+    case 'em_execução':
       return <Clock className={`${className} text-blue-500`} />;
-    case 'blocked':
-    case 'on_hold':
-    case 'bloqueado':
+    case 'paused':
+    case 'paralisado':
+      return <AlertCircle className={`${className} text-yellow-500`} />;
+    case 'not_started':
+    case 'não_iniciado':
+      return <div className={`${className.replace('h-', 'w-').replace('w-', 'h-')} bg-gray-400 rounded-full`} />;
+    case 'cancelled':
+    case 'cancelado':
       return <AlertCircle className={`${className} text-red-500`} />;
     default:
       return <div className={`${className.replace('h-', 'w-').replace('w-', 'h-')} bg-gray-400 rounded-full`} />;

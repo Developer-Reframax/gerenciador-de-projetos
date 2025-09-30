@@ -332,7 +332,7 @@ export default function ImpedimentsPage() {
           {editingImpediment && (
             <ImpedimentForm
               impediment={editingImpediment}
-              stages={editingImpediment.stage ? [editingImpediment.stage] : []}
+              stageId={editingImpediment.stage?.id || ''}
               onSubmit={handleImpedimentUpdated}
               onCancel={handleCloseEditModal}
             />

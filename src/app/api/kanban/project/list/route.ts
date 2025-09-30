@@ -34,7 +34,7 @@ export async function GET() {
         team_id,
         teams(name)
       `)
-      .eq('status', 'active')
+      .eq('status', 'in_progress')
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
 

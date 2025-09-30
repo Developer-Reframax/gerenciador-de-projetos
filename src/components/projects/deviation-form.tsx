@@ -31,8 +31,6 @@ import { toast } from 'sonner'
 
 const deviationSchema = z.object({
   description: z.string().min(1, 'Descrição é obrigatória').max(2000, 'Descrição muito longa'),
-  was_requested: z.boolean(),
-  requested_by: z.string().optional(),
   evaluation_criteria: z.string().min(1, 'Critério de avaliação é obrigatório'),
   impact_type: z.string().min(1, 'Tipo de impacto é obrigatório'),
   requires_approval: z.boolean().default(false),
@@ -41,16 +39,13 @@ const deviationSchema = z.object({
   approval_date: z.string().optional(),
   approval_notes: z.string().optional()
 }).refine((data) => {
-  if (data.was_requested && !data.requested_by) {
-    return false
-  }
   if (data.requires_approval && !data.approver_id) {
     return false
   }
   return true
 }, {
-  message: 'Campos obrigatórios não preenchidos',
-  path: ['requested_by']
+  message: 'Aprovador é obrigatório quando aprovação é necessária',
+  path: ['approver_id']
 })
 
 type DeviationFormData = z.infer<typeof deviationSchema>
@@ -71,9 +66,11 @@ const EVALUATION_CRITERIA: DeviationEvaluationCriteria[] = [
 ]
 
 const IMPACT_TYPES: DeviationImpactType[] = [
-  'Custo/orçamento',
-  'Aumento de escopo',
-  'Não se aplica'
+  'Custo/Orçamento',
+  'Prazo/Cronograma',
+  'Escopo/Entregas',
+  'Qualidade',
+  'Recursos/Equipe'
 ]
 
 const STATUS_OPTIONS: DeviationStatus[] = [
@@ -93,10 +90,8 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
     resolver: zodResolver(deviationSchema),
     defaultValues: {
       description: deviation?.description || '',
-      was_requested: deviation?.was_requested || false,
-      requested_by: deviation?.requested_by || '',
       evaluation_criteria: deviation?.evaluation_criteria || 'Fatores externo',
-      impact_type: deviation?.impact_type || 'Não se aplica',
+      impact_type: deviation?.impact_type || 'Custo/Orçamento',
       requires_approval: deviation?.requires_approval || false,
       approver_id: deviation?.approver_id || '',
       status: deviation?.status || 'Pendente',
@@ -106,7 +101,6 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
   })
 
   // Watch para campos condicionais
-  const wasRequested = form.watch('was_requested')
   const requiresApproval = form.watch('requires_approval')
 
   const onSubmit = async (data: DeviationFormData) => {
@@ -126,7 +120,6 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
       const requestData = {
         ...data,
         project_id: projectId,
-        requested_by: data.was_requested ? (data.requested_by || user.id) : null,
         approver_id: data.requires_approval ? data.approver_id : null,
         status: data.status || 'Pendente',
         approved_at: data.approval_date || null,
@@ -160,55 +153,7 @@ export function DeviationForm({ projectId, deviation, onSuccess, onCancel }: Dev
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((data: DeviationFormData) => onSubmit(data))} className="space-y-6">
-        {/* Foi Solicitado */}
-        <FormField
-          control={form.control as Control<DeviationFormData>}
-          name="was_requested"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Foi Solicitado</FormLabel>
-                <FormDescription>
-                  Marque se este desvio foi solicitado por alguém
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
 
-        {/* Solicitante (condicional) */}
-        {wasRequested && (
-          <FormField
-            control={form.control as Control<DeviationFormData>}
-            name="requested_by"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Solicitante *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o solicitante" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {users?.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.full_name || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
 
         {/* Descrição */}
         <FormField

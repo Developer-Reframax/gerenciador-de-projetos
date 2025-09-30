@@ -84,7 +84,7 @@ export async function GET() {
     const members = membersResult.data || [];
 
     // Contar projetos ativos
-    const activeProjects = projects.filter((p: ProjectData) => p.status === 'active').length;
+    const activeProjects = projects.filter((p: ProjectData) => p.status === 'in_progress').length;
     
     // Contar tarefas por status
     const pendingTasks = tasks.filter((t: TaskData) => t.status === 'todo').length;

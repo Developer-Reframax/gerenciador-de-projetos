@@ -265,7 +265,7 @@ export async function POST(
         title: title.trim(),
         description: description?.trim() || null,
         status: 'todo',
-        priority: priority || 'medium',
+        priority: priority || 'important',
         assignee_id: assignee_id || null,
         estimated_hours: estimated_hours || null,
         position: nextPosition,

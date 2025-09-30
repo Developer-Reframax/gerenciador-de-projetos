@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -33,13 +32,10 @@ import {
 const projectSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome muito longo'),
   description: z.string().optional(),
-  status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled']),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']),
+  status: z.enum(['not_started', 'in_progress', 'paused', 'completed', 'cancelled']),
+  priority: z.enum(['tactical', 'important', 'priority']),
   team_id: z.string().optional(),
-  requester_id: z.string().min(1, 'Solicitante é obrigatório'),
-  start_date: z.string().optional(),
-  due_date: z.string().optional(),
-  budget: z.number().min(0, 'Orçamento deve ser positivo').optional()
+  requester_id: z.string().min(1, 'Solicitante é obrigatório')
 })
 
 type ProjectFormData = z.infer<typeof projectSchema>
@@ -62,13 +58,10 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
     defaultValues: {
       name: project?.name || '',
       description: project?.description || '',
-      status: project?.status || 'planning',
-      priority: project?.priority || 'medium',
+      status: project?.status || 'not_started',
+      priority: project?.priority || 'important',
       team_id: project?.team_id || '',
-      requester_id: project?.owner_id || '',
-      start_date: project?.start_date ? project.start_date.split('T')[0] : '',
-      due_date: project?.due_date ? project.due_date.split('T')[0] : '',
-      budget: project?.budget || undefined
+      requester_id: project?.owner_id || ''
     }
   })
 
@@ -83,20 +76,14 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
         const updateData: UpdateProjectData = {
           id: project.id,
           ...data,
-          team_id: data.team_id === 'none' ? undefined : data.team_id || undefined,
-          start_date: data.start_date || undefined,
-          due_date: data.due_date || undefined,
-          budget: data.budget || undefined
+          team_id: data.team_id === 'none' ? undefined : data.team_id || undefined
         }
         result = await updateProject(project.id, updateData)
       } else {
         // Criar novo projeto
         const createData: CreateProjectData = {
           ...data,
-          team_id: data.team_id === 'none' ? undefined : data.team_id || undefined,
-          start_date: data.start_date || undefined,
-          due_date: data.due_date || undefined,
-          budget: data.budget || undefined
+          team_id: data.team_id === 'none' ? undefined : data.team_id || undefined
         }
         result = await createProject(createData)
       }
@@ -178,11 +165,11 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
           name="priority"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Prioridade</FormLabel>
+              <FormLabel>Classificação – Prioridade Estratégica</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione a prioridade" />
+                    <SelectValue placeholder="Selecione a prioridade estratégica" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -252,66 +239,7 @@ export function ProjectForm({ project, onSuccess, onCancel }: ProjectFormProps) 
           />
         
 
-        {/* Datas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="start_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data de Início</FormLabel>
-                <FormControl>
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Selecione a data de início"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name="due_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data de Término</FormLabel>
-                <FormControl>
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Selecione a data de término"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Orçamento */}
-        <FormField
-          control={form.control}
-          name="budget"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Orçamento (R$)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={field.value || ''}
-                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         {/* Botões */}
         <div className="flex justify-end gap-3 pt-4">

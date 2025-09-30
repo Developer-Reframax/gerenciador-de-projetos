@@ -33,6 +33,7 @@ export interface Project {
     id: string
     email: string
     full_name: string | null
+    avatar_url: string | null
   }
   team?: {
     id: string
@@ -48,17 +49,16 @@ export interface Project {
 }
 
 export type ProjectStatus = 
-  | 'planning'
-  | 'active'
-  | 'on_hold'
+  | 'not_started'
+  | 'in_progress'
+  | 'paused'
   | 'completed'
   | 'cancelled'
 
 export type ProjectPriority = 
-  | 'low'
-  | 'medium'
-  | 'high'
-  | 'urgent'
+  | 'tactical'
+  | 'important'
+  | 'priority'
 
 export interface CreateProjectData {
   name: string
@@ -66,10 +66,6 @@ export interface CreateProjectData {
   status: ProjectStatus
   priority: ProjectPriority
   team_id?: string
-
-  start_date?: string
-  due_date?: string
-  budget?: number
 }
 
 export interface UpdateProjectData extends Partial<CreateProjectData> {
@@ -87,9 +83,9 @@ export interface ProjectFilters {
 export interface ProjectStats {
   total: number
   completed: number
-  active: number
-  planning: number
-  on_hold: number
+  in_progress: number
+  not_started: number
+  paused: number
   cancelled: number
   by_status?: Record<ProjectStatus, number>
   by_priority?: Record<ProjectPriority, number>
@@ -102,7 +98,7 @@ export interface Task {
   title: string
   description: string | null
   status: 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed' | 'cancelled'
-  priority: 'low' | 'medium' | 'high'
+  priority: 'tactical' | 'important' | 'priority'
   project_id: string
   assignee_id: string | null
   created_at: string
@@ -112,58 +108,48 @@ export interface Task {
 
 // Constantes úteis
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
-  planning: 'Planejamento',
-  active: 'Em Andamento',
-  on_hold: 'Pausado',
+  not_started: 'Não Iniciado',
+  in_progress: 'Em execução',
+  paused: 'Paralisado',
   completed: 'Concluído',
   cancelled: 'Cancelado'
 }
 
 export const PROJECT_PRIORITY_LABELS: Record<ProjectPriority, string> = {
-  low: 'Baixa',
-  medium: 'Média',
-  high: 'Alta',
-  urgent: 'Urgente'
+  tactical: 'Tático',
+  important: 'Importante',
+  priority: 'Prioritário'
 }
 
 export const PROJECT_STATUS_COLORS: Record<ProjectStatus, string> = {
-  planning: 'bg-blue-100 text-blue-800',
-  active: 'bg-blue-100 text-blue-800',
-  on_hold: 'bg-gray-100 text-gray-800',
+  not_started: 'bg-gray-100 text-gray-800',
+  in_progress: 'bg-blue-100 text-blue-800',
+  paused: 'bg-yellow-100 text-yellow-800',
   completed: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800'
 }
 
 export const PROJECT_PRIORITY_COLORS: Record<ProjectPriority, string> = {
-  low: 'bg-green-100 text-green-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-orange-100 text-orange-800',
-  urgent: 'bg-red-100 text-red-800'
+  tactical: 'bg-green-100 text-green-800',
+  important: 'bg-yellow-100 text-yellow-800',
+  priority: 'bg-red-100 text-red-800'
 }
 
 // Schemas de validação Zod
 export const createProjectSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().optional(),
-  status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled']).default('planning'),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
+  status: z.enum(['not_started', 'in_progress', 'paused', 'completed', 'cancelled']).default('not_started'),
+  priority: z.enum(['tactical', 'important', 'priority']).default('important'),
   team_id: z.string().optional(),
-
-  start_date: z.string().optional(),
-  due_date: z.string().optional(),
-  budget: z.number().optional(),
   progress_percentage: z.number().min(0).max(100).default(0)
 })
 
 export const updateProjectSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').optional(),
   description: z.string().optional(),
-  status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled']).optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  status: z.enum(['not_started', 'in_progress', 'paused', 'completed', 'cancelled']).optional(),
+  priority: z.enum(['tactical', 'important', 'priority']).optional(),
   team_id: z.string().optional(),
-
-  start_date: z.string().optional(),
-  due_date: z.string().optional(),
-  budget: z.number().optional(),
   progress_percentage: z.number().min(0).max(100).optional()
 })

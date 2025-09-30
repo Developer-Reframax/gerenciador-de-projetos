@@ -166,7 +166,7 @@ export function ProjectCard({ project, onEdit, onDelete, onRefetch }: ProjectCar
         {/* Dono do projeto */}
         <div className="flex items-center gap-2 pt-2 border-t">
           <Avatar className="h-6 w-6">
-            <AvatarImage src="" alt={project.owner?.full_name || ''} />
+            <AvatarImage src={project.owner?.avatar_url || undefined} alt={project.owner?.full_name || ''} />
             <AvatarFallback className="text-xs">
               {getInitials(project.owner?.full_name || project.owner?.email || '')}
             </AvatarFallback>

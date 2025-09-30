@@ -172,7 +172,7 @@ export default function GanttPage() {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">
-                {projects.filter(p => p.status === 'active').length}
+                {projects.filter(p => p.status === 'in_progress').length}
               </div>
               <p className="text-xs text-muted-foreground">Em Andamento</p>
             </CardContent>

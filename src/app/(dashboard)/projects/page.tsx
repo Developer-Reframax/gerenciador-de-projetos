@@ -116,7 +116,7 @@ export default function ProjectsPage() {
               {statsLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                stats?.by_status?.active || 0
+                stats?.by_status?.in_progress || 0
               )}
             </div>
           </CardContent>
@@ -139,14 +139,14 @@ export default function ProjectsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alta Prioridade</CardTitle>
+            <CardTitle className="text-sm font-medium">Prioritário</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {statsLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                stats?.by_priority?.high || 0
+                stats?.by_priority?.priority || 0
               )}
             </div>
           </CardContent>
@@ -188,7 +188,7 @@ export default function ProjectsPage() {
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Prioridade" />
+                <SelectValue placeholder="Classificação – Prioridade Estratégica" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as Prioridades</SelectItem>

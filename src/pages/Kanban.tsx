@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useCallback } from 'react';
-import { DndContext, DragOverlay, closestCorners } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCorners, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import { toast } from 'sonner';
 import { KanbanBoard } from '../components/kanban/KanbanBoard';
 import { KanbanCard } from '../components/kanban/KanbanCard';
@@ -33,10 +33,21 @@ export function Kanban() {
   const [showCreateProject, setShowCreateProject] = useState(false);
 
   // Hook para dados do Kanban - sem filtros
-  const { data, loading, error, refetch, updateItem } = useKanbanData({
-    autoRefresh: true,
-    refreshInterval: 30000
+  const { pessoas, tarefasPorPessoa, isLoading, error, refetch } = useKanbanData({
+    tipoVisao: 'pessoa'
   });
+
+  // Converter dados para formato KanbanData
+  const data: KanbanData | null = pessoas.length > 0 ? {
+    pessoas,
+    tarefasPorPessoa
+  } : null;
+
+  // Função para atualizar item (placeholder)
+  const updateItem = async (itemId: string, updates: Partial<KanbanTask | KanbanProject>) => {
+    // TODO: Implementar atualização de item
+    console.log('Update item:', itemId, updates);
+  };
 
   // Usar dados locais se disponíveis, senão usar dados do hook
   const currentData = localData || data;
@@ -60,20 +71,32 @@ export function Kanban() {
   }, []);
 
   // Hook para drag and drop
-  const {
-    dragState,
-    sensors,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd
-  } = useKanbanDragDrop({
-    data: currentData,
-    viewType,
-    onDataUpdate: handleDataUpdate,
-    onItemUpdate: async (itemId: string, updates: Partial<KanbanTask | KanbanProject>) => {
-      await updateItem(itemId, updates);
+  const { handleDragEnd } = useKanbanDragDrop({
+    onTarefaMoved: () => {
+      refetch();
     }
   });
+
+  // Estado local para drag
+  const [dragState, setDragState] = useState<{
+    activeItem: KanbanTask | KanbanProject | null;
+  }>({ activeItem: null });
+
+  // Sensors para drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
+
+  // Handlers para drag and drop
+  const handleDragStart = useCallback(() => {
+    // TODO: Implementar lógica de drag start
+    setDragState({ activeItem: null });
+  }, []);
+
+  const handleDragOver = useCallback(() => {
+    // TODO: Implementar lógica de drag over
+  }, []);
 
   // Hook para atualizações em tempo real
   const { isConnected, lastUpdate } = useKanbanRealTime({
@@ -106,7 +129,7 @@ export function Kanban() {
   }, [refetch]);
 
   // Renderizar loading
-  if (loading && !currentData) {
+  if (isLoading && !currentData) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="flex items-center space-x-2">
@@ -123,7 +146,7 @@ export function Kanban() {
       <div className="flex flex-col items-center justify-center h-96 space-y-4">
         <div className="text-red-600 text-center">
           <h3 className="text-lg font-semibold mb-2">Erro ao carregar dados</h3>
-          <p>{error}</p>
+          <p>{error?.message || 'Erro desconhecido'}</p>
         </div>
         <button
           onClick={handleRefresh}
@@ -164,11 +187,11 @@ export function Kanban() {
             {/* Botão de refresh */}
             <button
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={isLoading}
               className="flex items-center space-x-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               title="Atualizar dados"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -189,7 +212,7 @@ export function Kanban() {
             data={currentData}
             viewType={viewType}
             onItemClick={handleItemClick}
-            loading={loading}
+            loading={isLoading}
           />
           
           {/* Overlay para drag and drop */}

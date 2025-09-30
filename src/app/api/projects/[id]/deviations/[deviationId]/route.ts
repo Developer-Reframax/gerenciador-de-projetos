@@ -83,8 +83,6 @@ export async function PUT(
     // Preparar dados de atualização
     const updateData: {
       description: string;
-      was_requested: boolean;
-      requested_by: string | null;
       evaluation_criteria: string;
       impact_type: string;
       requires_approval: boolean;
@@ -96,8 +94,6 @@ export async function PUT(
       approved_by?: string;
     } = {
       description: body.description,
-      was_requested: body.was_requested || false,
-      requested_by: body.was_requested ? body.requested_by : null,
       evaluation_criteria: body.evaluation_criteria,
       impact_type: body.impact_type,
       requires_approval: body.requires_approval || false,

@@ -36,16 +36,16 @@ export async function GET() {
       const emptyStats = {
         total: 0,
         completed: 0,
-        active: 0,
-        planning: 0,
-        on_hold: 0,
+        in_progress: 0,
+        not_started: 0,
+        paused: 0,
         cancelled: 0,
         completion_rate: 0,
         by_status: {
-          planning: 0,
-          active: 0,
+          not_started: 0,
+          in_progress: 0,
           completed: 0,
-          on_hold: 0,
+          paused: 0,
           cancelled: 0
         },
         by_priority: {
@@ -79,18 +79,17 @@ export async function GET() {
     const projectsArray = projects || []
     const total = projectsArray.length
     const byStatus = {
-      planning: projectsArray.filter(p => p.status === 'planning').length,
-      active: projectsArray.filter(p => p.status === 'active').length,
+      not_started: projectsArray.filter(p => p.status === 'not_started').length,
+      in_progress: projectsArray.filter(p => p.status === 'in_progress').length,
       completed: projectsArray.filter(p => p.status === 'completed').length,
-      on_hold: projectsArray.filter(p => p.status === 'on_hold').length,
+      paused: projectsArray.filter(p => p.status === 'paused').length,
       cancelled: projectsArray.filter(p => p.status === 'cancelled').length
     }
 
     const byPriority = {
-      low: projectsArray.filter(p => p.priority === 'low').length,
-      medium: projectsArray.filter(p => p.priority === 'medium').length,
-      high: projectsArray.filter(p => p.priority === 'high').length,
-      urgent: projectsArray.filter(p => p.priority === 'urgent').length
+      tactical: projectsArray.filter(p => p.priority === 'tactical').length,
+        important: projectsArray.filter(p => p.priority === 'important').length,
+        priority: projectsArray.filter(p => p.priority === 'priority').length
     }
 
     const completionRate = total > 0 ? Math.round((byStatus.completed / total) * 100) : 0
@@ -98,9 +97,9 @@ export async function GET() {
     const stats = {
       total,
       completed: byStatus.completed,
-      active: byStatus.active,
-      planning: byStatus.planning,
-      on_hold: byStatus.on_hold,
+      in_progress: byStatus.in_progress,
+      not_started: byStatus.not_started,
+      paused: byStatus.paused,
       cancelled: byStatus.cancelled,
       completion_rate: completionRate,
       by_status: byStatus,

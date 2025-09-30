@@ -232,9 +232,8 @@ function getDefaultColumnColor(columnId: string): string {
     'done': '#10B981',
     'completed': '#10B981',
     'cancelled': '#EF4444',
-    'planning': '#6366F1',
-    'active': '#F59E0B',
-    'on_hold': '#F97316',
+    'not_started': '#6366F1',
+    'paused': '#F97316',
     'archived': '#6B7280'
   };
   
@@ -243,14 +242,14 @@ function getDefaultColumnColor(columnId: string): string {
 
 function getPriorityColor(priority: string): string {
   switch (priority.toLowerCase()) {
-    case 'high':
-    case 'alta':
+    case 'priority':
+    case 'prioritário':
       return 'bg-red-100 text-red-800';
-    case 'medium':
-    case 'média':
+    case 'important':
+    case 'importante':
       return 'bg-yellow-100 text-yellow-800';
-    case 'low':
-    case 'baixa':
+    case 'tactical':
+    case 'tático':
       return 'bg-green-100 text-green-800';
     default:
       return 'bg-gray-100 text-gray-800';

@@ -137,7 +137,7 @@ export function GanttFilters({
 
         {/* Prioridade */}
         <div className="space-y-2">
-          <Label>Prioridade</Label>
+          <Label>Classificação – Prioridade Estratégica</Label>
           <div className="flex flex-wrap gap-2">
             {Object.entries(PROJECT_PRIORITY_LABELS).map(([value, label]) => (
               <Button

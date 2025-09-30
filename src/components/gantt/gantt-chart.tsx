@@ -28,9 +28,9 @@ const PRIORITY_COLORS = {
 };
 
 const STATUS_COLORS = {
-  planning: 'bg-gray-500',
+  not_started: 'bg-gray-500',
   in_progress: 'bg-blue-500',
-  on_hold: 'bg-yellow-600',
+  paused: 'bg-yellow-600',
   completed: 'bg-green-600',
   cancelled: 'bg-red-600'
 };

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { CommentType, COMMENT_TYPE_CONFIG } from '@/types/comment'
 import { Button } from '@/components/ui/button'
 import { MentionTextarea } from '@/components/ui/mention-textarea'
+import { WorkflowMentionTextarea } from '@/components/ui/workflow-mention-textarea'
 import {
   Select,
   SelectContent,
@@ -24,7 +25,8 @@ interface CommentFormProps {
   submitLabel?: string
   showTypeSelector?: boolean
   loading?: boolean
-  projectId: string
+  projectId?: string
+  disableMentions?: boolean
 }
 
 export function CommentForm({
@@ -32,11 +34,12 @@ export function CommentForm({
   onCancel,
   initialValue = '',
   initialType = 'comment',
-  placeholder = 'Escreva seu comentário... (use @ para mencionar usuários)',
+  placeholder = 'Escreva seu comentário...',
   submitLabel = 'Comentar',
   showTypeSelector = true,
   loading = false,
-  projectId
+  projectId,
+  disableMentions = false
 }: CommentFormProps) {
   const [content, setContent] = useState(initialValue)
   const [type, setType] = useState<CommentType>(initialType)
@@ -98,36 +101,50 @@ export function CommentForm({
         </div>
       )}
 
-      {/* Campo de texto com menções */}
+      {/* Campo de texto com ou sem menções */}
       <div className="space-y-2">
-        <MentionTextarea
-          value={content}
-          onChange={(newContent, newMentionedUsers) => {
-            setContent(newContent)
-            setMentionedUsers(newMentionedUsers)
-            
-            // Automatically set type to 'mention' if there are mentioned users
-            if (newMentionedUsers.length > 0 && type === 'comment') {
-              setType('mention')
-            }
-            // Reset to 'comment' if no mentions and currently set to 'mention'
-            else if (newMentionedUsers.length === 0 && type === 'mention') {
-              setType('comment')
-            }
-          }}
-          placeholder={placeholder}
-          projectId={projectId}
-          className="min-h-[100px] resize-none"
-          disabled={loading || isSubmitting}
-          rows={4}
-        />
+        {disableMentions ? (
+          <WorkflowMentionTextarea
+            value={content}
+            onChange={(newContent, newMentionedUsers) => {
+              setContent(newContent)
+              setMentionedUsers(newMentionedUsers)
+            }}
+            placeholder={placeholder}
+            className="min-h-[100px] resize-none"
+            disabled={loading || isSubmitting}
+            rows={4}
+          />
+        ) : (
+          <MentionTextarea
+            value={content}
+            onChange={(newContent, newMentionedUsers) => {
+              setContent(newContent)
+              setMentionedUsers(newMentionedUsers)
+              
+              // Automatically set type to 'mention' if there are mentioned users
+              if (newMentionedUsers.length > 0 && type === 'comment') {
+                setType('mention')
+              }
+              // Reset to 'comment' if no mentions and currently set to 'mention'
+              else if (newMentionedUsers.length === 0 && type === 'mention') {
+                setType('comment')
+              }
+            }}
+            placeholder={placeholder}
+            projectId={projectId!}
+            className="min-h-[100px] resize-none"
+            disabled={loading || isSubmitting}
+            rows={4}
+          />
+        )}
         
         {/* Dicas */}
         <div className="flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">
-            Pressione Ctrl+Enter para enviar
+            Pressione Ctrl+Enter para enviar{!disableMentions ? ' • Use @ para mencionar usuários' : ''}
           </p>
-          {mentionedUsers.length > 0 && (
+          {!disableMentions && mentionedUsers.length > 0 && (
             <p className="text-xs text-blue-600">
               {mentionedUsers.length} usuário{mentionedUsers.length > 1 ? 's' : ''} mencionado{mentionedUsers.length > 1 ? 's' : ''}
             </p>

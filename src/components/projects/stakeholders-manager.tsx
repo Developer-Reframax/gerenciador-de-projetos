@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Search, X, Loader2 } from 'lucide-react'
 
 interface User {
@@ -12,6 +12,7 @@ interface User {
   full_name: string
   email: string
   role?: string
+  avatar_url?: string
 }
 
 export interface StakeholdersManagerProps {
@@ -112,6 +113,7 @@ export function StakeholdersManager({ selectedStakeholderIds, onSelectionChange 
               return user ? (
                 <Badge key={userId} variant="secondary" className="flex items-center gap-2 py-1 px-2">
                   <Avatar className="h-5 w-5">
+                    <AvatarImage src={user.avatar_url || undefined} />
                     <AvatarFallback className="text-xs">
                       {getInitials(user.full_name)}
                     </AvatarFallback>
@@ -149,6 +151,7 @@ export function StakeholdersManager({ selectedStakeholderIds, onSelectionChange 
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatar_url || undefined} />
                     <AvatarFallback className="text-sm">
                       {getInitials(user.full_name)}
                     </AvatarFallback>

@@ -23,7 +23,8 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  GitBranch
 } from "lucide-react"
 import { NotificationBadge, NotificationCenter } from "@/components/notifications"
 import { useNotifications } from "@/hooks/useNotifications"
@@ -42,6 +43,11 @@ const sidebarItems = [
     title: "Projetos",
     icon: FolderKanban,
     href: "/projects"
+  },
+  {
+    title: "Fluxos de Trabalho",
+    icon: GitBranch,
+    href: "/workflows"
   },
   {
     title: "Equipes",
@@ -66,7 +72,7 @@ const sidebarItems = [
   {
     title: "Kanban",
     icon: FolderKanban,
-    href: "/kanban"
+    href: "/kanban-reformulado"
   },
   {
     title: "Gantt",
@@ -240,7 +246,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="/avatars/user.jpg" alt="User" />
+                    <AvatarImage src={user?.user_metadata?.avatar_url || undefined} alt="User" />
                     <AvatarFallback>
                       {(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário')
                         .split(' ')

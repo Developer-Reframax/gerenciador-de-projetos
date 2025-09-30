@@ -33,13 +33,28 @@ export async function GET(
       .from('projects')
       .select(`
         id,
+        name,
         strategic_objective_id,
         strategic_pillar_id,
+        strategic_objective_text,
         request_date,
         committee_approval_date,
         real_start_date,
         real_end_date,
+        start_date,
+        due_date,
+        budget,
+        owner_name,
+        direct_responsibles,
+        requesting_area,
+        planned_budget,
+        used_budget,
         lessons_learned,
+        total_tasks,
+        completed_tasks,
+        progress_percentage,
+        created_at,
+        updated_at,
         strategic_objectives:strategic_objective_id(
           id,
           name,
@@ -138,22 +153,46 @@ export async function GET(
 
     const stakeholders = projectStakeholders?.map(ps => ps.users).filter(Boolean) || []
 
+    // Calcular indicadores informativos
+    const totalTasks = (project as { total_tasks?: number }).total_tasks || 0
+    const completedTasks = project.completed_tasks || 0
+    const pendingTasks = totalTasks - completedTasks
+    const progressPercentage = project.progress_percentage || 0
+
     return NextResponse.json({
       success: true,
       data: {
+        id: project.id,
+        name: project.name,
         project_id: project.id,
         strategic_objective_id: project.strategic_objective_id,
+        strategic_objective_text: project.strategic_objective_text,
         strategic_pillar_id: project.strategic_pillar_id,
         request_date: project.request_date,
         committee_approval_date: project.committee_approval_date,
         real_start_date: project.real_start_date,
         real_end_date: project.real_end_date,
+        start_date: project.start_date,
+        due_date: project.due_date,
+        budget: project.budget,
+        owner_name: project.owner_name,
+        direct_responsibles: project.direct_responsibles,
+        requesting_area: project.requesting_area,
+        planned_budget: project.planned_budget,
+        used_budget: project.used_budget,
         lessons_learned: project.lessons_learned,
         strategic_objective: project.strategic_objectives,
         strategic_pillar: project.strategic_pillars,
         tags,
         areas,
-        stakeholders
+        stakeholders,
+        // Indicadores informativos (não editáveis)
+        total_tasks: totalTasks,
+        completed_tasks: completedTasks,
+        pending_tasks: pendingTasks,
+        progress_percentage: progressPercentage,
+        created_at: project.created_at,
+        updated_at: project.updated_at
       }
     })
   } catch (error) {
@@ -184,11 +223,20 @@ export async function PUT(
     const projectId = id
     const {
       strategic_objective_id,
+      strategic_objective_text,
       strategic_pillar_id,
       request_date,
       committee_approval_date,
       real_start_date,
       real_end_date,
+      start_date,
+      due_date,
+      budget,
+      owner_name,
+      direct_responsibles,
+      requesting_area,
+      planned_budget,
+      used_budget,
       tag_ids,
       area_ids,
       stakeholder_ids,
@@ -278,11 +326,20 @@ export async function PUT(
       .from('projects')
       .update({
         strategic_objective_id: strategic_objective_id || null,
+        strategic_objective_text: strategic_objective_text || null,
         strategic_pillar_id: strategic_pillar_id || null,
         request_date: request_date || null,
         committee_approval_date: committee_approval_date || null,
         real_start_date: real_start_date || null,
         real_end_date: real_end_date || null,
+        start_date: start_date || null,
+        due_date: due_date || null,
+        budget: budget || null,
+        owner_name: owner_name || null,
+        direct_responsibles: direct_responsibles || null,
+        requesting_area: requesting_area || null,
+        planned_budget: planned_budget || null,
+        used_budget: used_budget || null,
         lessons_learned: lessons_learned || null,
         updated_at: new Date().toISOString()
       })

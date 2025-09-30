@@ -216,6 +216,12 @@ export type Database = {
           real_start_date: string | null
           real_end_date: string | null
           lessons_learned: string | null
+          strategic_objective_text: string | null
+          owner_name: string | null
+          direct_responsibles: string | null
+          requesting_area: string[] | null
+          planned_budget: number | null
+          used_budget: number | null
         }
         Insert: {
           id?: string
@@ -249,6 +255,12 @@ export type Database = {
           real_start_date?: string | null
           real_end_date?: string | null
           lessons_learned?: string | null
+          strategic_objective_text?: string | null
+          owner_name?: string | null
+          direct_responsibles?: string | null
+          requesting_area?: string[] | null
+          planned_budget?: number | null
+          used_budget?: number | null
         }
         Update: {
           id?: string
@@ -282,6 +294,12 @@ export type Database = {
           real_start_date?: string | null
           real_end_date?: string | null
           lessons_learned?: string | null
+          strategic_objective_text?: string | null
+          owner_name?: string | null
+          direct_responsibles?: string | null
+          requesting_area?: string[] | null
+          planned_budget?: number | null
+          used_budget?: number | null
         }
         Relationships: [
           {
@@ -867,8 +885,6 @@ export type Database = {
           id: string
           project_id: string
           description: string
-          was_requested: boolean
-          requested_by: string | null
           evaluation_criteria: string
           impact_type: string
           requires_approval: boolean
@@ -883,8 +899,6 @@ export type Database = {
           id?: string
           project_id: string
           description: string
-          was_requested?: boolean
-          requested_by?: string | null
           evaluation_criteria: string
           impact_type: string
           requires_approval?: boolean
@@ -899,8 +913,6 @@ export type Database = {
           id?: string
           project_id?: string
           description?: string
-          was_requested?: boolean
-          requested_by?: string | null
           evaluation_criteria?: string
           impact_type?: string
           requires_approval?: boolean
@@ -917,13 +929,6 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_deviations_requested_by_fkey"
-            columns: ["requested_by"]
-            isOneToOne: false
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -1153,32 +1158,542 @@ export type Database = {
           email: string
           full_name: string | null
           avatar_url: string | null
-          role: Database["public"]["Enums"]["user_role"]
+          bio: string | null
+          timezone: string | null
+          language: string | null
+          theme: string | null
+          notification_preferences: Json | null
           is_active: boolean
+          last_seen_at: string | null
           created_at: string
           updated_at: string
+          deleted_at: string | null
+          role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
           id: string
           email: string
           full_name?: string | null
           avatar_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
+          bio?: string | null
+          timezone?: string | null
+          language?: string | null
+          theme?: string | null
+          notification_preferences?: Json | null
           is_active?: boolean
+          last_seen_at?: string | null
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
           id?: string
           email?: string
           full_name?: string | null
           avatar_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
+          bio?: string | null
+          timezone?: string | null
+          language?: string | null
+          theme?: string | null
+          notification_preferences?: Json | null
           is_active?: boolean
+          last_seen_at?: string | null
           created_at?: string
           updated_at?: string
+          deleted_at?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
+      }
+      workflows: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          category: string
+          created_by: string | null
+          start_date: string | null
+          end_date: string | null
+          status: string | null
+          priority: string | null
+          progress_percentage: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          category: string
+          created_by?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          status?: string | null
+          priority?: string | null
+          progress_percentage?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          category?: string
+          created_by?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          status?: string | null
+          priority?: string | null
+          progress_percentage?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflows_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_stages: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          name: string
+          description: string | null
+          position: number
+          status: string | null
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          name: string
+          description?: string | null
+          position: number
+          status?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          name?: string
+          description?: string | null
+          position?: number
+          status?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_stages_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_stages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_tasks: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          stage_id: string | null
+          title: string
+          description: string | null
+          status: string | null
+          priority: string | null
+          assigned_to: string | null
+          due_date: string | null
+          position: number
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          stage_id?: string | null
+          title: string
+          description?: string | null
+          status?: string | null
+          priority?: string | null
+          assigned_to?: string | null
+          due_date?: string | null
+          position: number
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          stage_id?: string | null
+          title?: string
+          description?: string | null
+          status?: string | null
+          priority?: string | null
+          assigned_to?: string | null
+          due_date?: string | null
+          position?: number
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_tasks_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_tasks_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_attachments: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          filename: string
+          file_path: string
+          file_type: string | null
+          file_size: number | null
+          description: string | null
+          uploaded_by: string | null
+          created_at: string | null
+          original_filename: string | null
+          mime_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          filename: string
+          file_path: string
+          file_type?: string | null
+          file_size?: number | null
+          description?: string | null
+          uploaded_by?: string | null
+          created_at?: string | null
+          original_filename?: string | null
+          mime_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          filename?: string
+          file_path?: string
+          file_type?: string | null
+          file_size?: number | null
+          description?: string | null
+          uploaded_by?: string | null
+          created_at?: string | null
+          original_filename?: string | null
+          mime_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_attachments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_comments: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          author_id: string | null
+          content: string
+          parent_id: string | null
+          created_at: string | null
+          updated_at: string | null
+          type: string | null
+          mentioned_users: string[] | null
+          reactions: Json | null
+          is_edited: boolean | null
+          is_pinned: boolean | null
+          is_internal: boolean | null
+          edited_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          author_id?: string | null
+          content: string
+          parent_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          type?: string | null
+          mentioned_users?: string[] | null
+          reactions?: Json | null
+          is_edited?: boolean | null
+          is_pinned?: boolean | null
+          is_internal?: boolean | null
+          edited_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          author_id?: string | null
+          content?: string
+          parent_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          type?: string | null
+          mentioned_users?: string[] | null
+          reactions?: Json | null
+          is_edited?: boolean | null
+          is_pinned?: boolean | null
+          is_internal?: boolean | null
+          edited_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_comments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_comments_user_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_comments"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_logs: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          user_id: string | null
+          action: string
+          description: string | null
+          metadata: Json | null
+          old_data: Json | null
+          new_data: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          user_id?: string | null
+          action: string
+          description?: string | null
+          metadata?: Json | null
+          old_data?: Json | null
+          new_data?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          user_id?: string | null
+          action?: string
+          description?: string | null
+          metadata?: Json | null
+          old_data?: Json | null
+          new_data?: Json | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_logs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_impediments: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          task_id: string | null
+          title: string
+          description: string | null
+          status: string | null
+          severity: string | null
+          reported_by: string | null
+          reported_date: string | null
+          resolved_date: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          task_id?: string | null
+          title: string
+          description?: string | null
+          status?: string | null
+          severity?: string | null
+          reported_by?: string | null
+          reported_date?: string | null
+          resolved_date?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          task_id?: string | null
+          title?: string
+          description?: string | null
+          status?: string | null
+          severity?: string | null
+          reported_by?: string | null
+          reported_date?: string | null
+          resolved_date?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_impediments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_impediments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_impediments_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      workflow_strategic_info: {
+        Row: {
+          id: string
+          workflow_id: string | null
+          strategic_data: Json | null
+          metrics: Json | null
+          kpis: Json | null
+          actual_start_date: string | null
+          actual_end_date: string | null
+          tags: Json | null
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          workflow_id?: string | null
+          strategic_data?: Json | null
+          metrics?: Json | null
+          kpis?: Json | null
+          actual_start_date?: string | null
+          actual_end_date?: string | null
+          tags?: Json | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          workflow_id?: string | null
+          strategic_data?: Json | null
+          metrics?: Json | null
+          kpis?: Json | null
+          actual_start_date?: string | null
+          actual_end_date?: string | null
+          tags?: Json | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_strategic_info_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_strategic_info_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
@@ -1263,9 +1778,9 @@ export type Database = {
       comment_type: "comment" | "status_change" | "assignment" | "mention" | "system"
       impediment_criticality: "alta" | "media" | "baixa"
       impediment_status: "aberto" | "em_resolucao" | "resolvido" | "cancelado"
-      project_priority: "low" | "medium" | "high" | "urgent"
+      project_priority: "tactical" | "important" | "priority"
       project_role: "owner" | "admin" | "member" | "viewer"
-      project_status: "planning" | "active" | "on_hold" | "completed" | "cancelled" | "blocked"
+      project_status: "not_started" | "in_progress" | "paused" | "completed" | "cancelled"
       risk_impact: "prazo" | "custo" | "qualidade" | "reputacao"
       risk_probability: "baixa" | "media" | "alta"
       risk_status: "identificado" | "em_analise" | "em_mitigacao" | "monitorado" | "materializado" | "encerrado"
@@ -1338,11 +1853,10 @@ export type ProjectDeviationUpdate = Database['public']['Tables']['project_devia
 
 // Enums específicos para desvios
 export type DeviationEvaluationCriteria = 'Fatores externo' | 'Inovação' | 'Medida corretiva' | 'Melhorias' | 'Repriorização'
-export type DeviationImpactType = 'Custo/orçamento' | 'Aumento de escopo' | 'Não se aplica'
+export type DeviationImpactType = 'Custo/Orçamento' | 'Prazo/Cronograma' | 'Escopo/Entregas' | 'Qualidade' | 'Recursos/Equipe'
 export type DeviationStatus = 'Pendente' | 'Aprovado' | 'Rejeitado' | 'Em análise' | 'Implementado'
 
 // Tipo para desvio com informações do usuário
 export type ProjectDeviationWithUsers = ProjectDeviation & {
-  requested_by_user?: Pick<User, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
   approver_user?: Pick<User, 'id' | 'full_name' | 'email' | 'avatar_url'> | null
 }

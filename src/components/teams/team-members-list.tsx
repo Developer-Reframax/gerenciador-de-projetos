@@ -268,7 +268,7 @@ export function TeamMembersList({
                             <SelectItem key={user.id} value={user.id}>
                               <div className="flex items-center space-x-2">
                                 <Avatar className="h-6 w-6">
-                                  <AvatarImage src={user.avatar_url} />
+                                  <AvatarImage src={user.avatar_url || undefined} />
                                   <AvatarFallback className="text-xs">
                                     {getInitials(user.full_name)}
                                   </AvatarFallback>

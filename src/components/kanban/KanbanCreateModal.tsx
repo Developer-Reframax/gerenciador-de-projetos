@@ -26,6 +26,13 @@ interface KanbanCreateModalProps {
     assignee_id?: string;
     team_id?: string;
     assigned_to?: string;
+    title?: string;
+    name?: string;
+    description?: string;
+    priority?: 'baixa' | 'media' | 'alta';
+    due_date?: string;
+    start_date?: string;
+    team_name?: string;
   };
   availableProjects?: Array<{ id: string; name: string }>;
   availableUsers?: Array<{ id: string; name: string }>;
@@ -49,21 +56,21 @@ export function KanbanCreateModal({
   const [formData, setFormData] = React.useState<Partial<KanbanTask> | Partial<KanbanProject>>(() => {
     if (itemType === 'task') {
       return {
-        title: 'title' in defaultValues ? defaultValues.title || '' : '',
-        description: 'description' in defaultValues ? defaultValues.description || '' : '',
-        priority: ('priority' in defaultValues ? defaultValues.priority as 'low' | 'medium' | 'high' | 'urgent' : null) || 'medium',
+        title: ('title' in defaultValues && defaultValues.title) ? defaultValues.title : '',
+        description: ('description' in defaultValues && defaultValues.description) ? defaultValues.description : '',
+        priority: ('priority' in defaultValues ? defaultValues.priority as 'baixa' | 'media' | 'alta' : null) || 'media',
         status: ('status' in defaultValues ? defaultValues.status as 'todo' | 'in_progress' | 'in_review' | 'completed' : null) || 'todo',
-        project_id: 'project_id' in defaultValues ? defaultValues.project_id || '' : '',
-        assigned_to: 'assigned_to' in defaultValues ? defaultValues.assigned_to || '' : '',
-        due_date: 'due_date' in defaultValues ? defaultValues.due_date || '' : ''
+        project_id: ('project_id' in defaultValues && defaultValues.project_id) ? defaultValues.project_id : '',
+        assigned_to: ('assigned_to' in defaultValues && defaultValues.assigned_to) ? defaultValues.assigned_to : '',
+        due_date: ('due_date' in defaultValues && defaultValues.due_date) ? defaultValues.due_date : ''
       } as Partial<KanbanTask>;
     } else {
       return {
-        name: 'name' in defaultValues ? defaultValues.name || '' : '',
-        description: 'description' in defaultValues ? defaultValues.description || '' : '',
-        priority: ('priority' in defaultValues ? defaultValues.priority as 'low' | 'medium' | 'high' | 'urgent' : null) || 'medium',
+        name: ('name' in defaultValues && defaultValues.name) ? defaultValues.name : '',
+        description: ('description' in defaultValues && defaultValues.description) ? defaultValues.description : '',
+        priority: ('priority' in defaultValues ? defaultValues.priority as 'baixa' | 'media' | 'alta' : null) || 'media',
         status: ('status' in defaultValues ? defaultValues.status as 'planning' | 'active' | 'review' | 'completed' : null) || 'planning',
-        start_date: 'start_date' in defaultValues ? defaultValues.start_date || '' : ''
+        start_date: ('start_date' in defaultValues && defaultValues.start_date) ? defaultValues.start_date : ''
       } as Partial<KanbanProject>;
     }
   });
@@ -77,7 +84,7 @@ export function KanbanCreateModal({
             title: '',
             description: '',
             status: defaultValues.status || 'todo',
-            priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+            priority: 'media' as 'baixa' | 'media' | 'alta',
             project_id: defaultValues.project_id || '',
             assigned_to: 'assigned_to' in defaultValues ? defaultValues.assigned_to || '' : '',
             due_date: ''
@@ -86,7 +93,7 @@ export function KanbanCreateModal({
             name: '',
             description: '',
             status: defaultValues.status || 'planning',
-            priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+            priority: 'media' as 'baixa' | 'media' | 'alta',
             team_name: 'team_name' in defaultValues ? defaultValues.team_name || '' : '',
             start_date: ''
           };
@@ -278,11 +285,10 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
      { value: 'completed', label: 'Concluído' }
    ];
   
-  const priorityOptions: Array<{ value: 'low' | 'medium' | 'high' | 'urgent'; label: string }> = [
-     { value: 'urgent', label: 'Urgente' },
-     { value: 'high', label: 'Alta' },
-     { value: 'medium', label: 'Média' },
-     { value: 'low', label: 'Baixa' }
+  const priorityOptions: Array<{ value: 'tactical' | 'important' | 'priority'; label: string }> = [
+     { value: 'priority', label: 'Prioritário' },
+     { value: 'important', label: 'Importante' },
+     { value: 'tactical', label: 'Tático' }
    ];
   
   return (
@@ -389,10 +395,10 @@ function TaskForm({ formData, errors, onChange, availableProjects, availableUser
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Flag className="inline h-4 w-4 mr-1" />
-            Prioridade
+            Classificação – Prioridade Estratégica
           </label>
           <select
-            value={formData.priority || 'medium'}
+            value={formData.priority || 'important'}
             onChange={(e) => onChange('priority', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
@@ -449,18 +455,18 @@ interface ProjectFormProps {
 }
 
 function ProjectForm({ formData, errors, onChange, availableTeams, availableUsers }: ProjectFormProps) {
-  const statusOptions: Array<{ value: 'planning' | 'active' | 'review' | 'completed'; label: string }> = [
-     { value: 'planning', label: 'Planejamento' },
-     { value: 'active', label: 'Ativo' },
-     { value: 'review', label: 'Em Revisão' },
-     { value: 'completed', label: 'Concluído' }
+  const statusOptions: Array<{ value: 'not_started' | 'in_progress' | 'paused' | 'completed' | 'cancelled'; label: string }> = [
+     { value: 'not_started', label: 'Não Iniciado' },
+     { value: 'in_progress', label: 'Em execução' },
+     { value: 'paused', label: 'Paralisado' },
+     { value: 'completed', label: 'Concluído' },
+     { value: 'cancelled', label: 'Cancelado' }
    ];
   
-  const priorityOptions: Array<{ value: 'low' | 'medium' | 'high' | 'urgent'; label: string }> = [
-     { value: 'urgent', label: 'Urgente' },
-     { value: 'high', label: 'Alta' },
-     { value: 'medium', label: 'Média' },
-     { value: 'low', label: 'Baixa' }
+  const priorityOptions: Array<{ value: 'tactical' | 'important' | 'priority'; label: string }> = [
+     { value: 'priority', label: 'Prioritário' },
+     { value: 'important', label: 'Importante' },
+     { value: 'tactical', label: 'Tático' }
    ];
   
   return (
@@ -548,7 +554,7 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
             Status
           </label>
           <select
-            value={formData.status || 'planning'}
+            value={formData.status || 'not_started'}
             onChange={(e) => onChange('status', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
@@ -564,10 +570,10 @@ function ProjectForm({ formData, errors, onChange, availableTeams, availableUser
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Flag className="inline h-4 w-4 mr-1" />
-            Prioridade
+            Classificação – Prioridade Estratégica
           </label>
           <select
-            value={formData.priority || 'medium'}
+            value={formData.priority || 'important'}
             onChange={(e) => onChange('priority', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
