@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase-server'
+import { createRouteHandlerClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { UpdateUserForm } from '@/types/user'
 import { Database } from '@/types/database'
 import { cookies } from 'next/headers'
@@ -13,6 +13,7 @@ export async function GET(
   try {
     const cookieStore = await cookies()
     const supabaseClient = createRouteHandlerClient(cookieStore)
+    // const supabaseAdmin = createServiceRoleClient()
     
     // Verificar autenticação
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
@@ -234,7 +235,7 @@ export async function DELETE(
       )
     }
 
-    // Soft delete - marcar como excluído
+    // Soft delete - marcar como excluído na tabela users
     const { error: deleteError } = await supabaseClient
       .from('users')
       .update({
@@ -245,23 +246,53 @@ export async function DELETE(
       .eq('id', id)
 
     if (deleteError) {
-      console.error('Erro ao excluir usuário:', deleteError)
+      console.error('Erro ao excluir usuário da tabela:', deleteError)
       return NextResponse.json(
         { error: 'Erro ao excluir usuário: ' + deleteError.message },
         { status: 500 }
       )
     }
 
-    // Desativar usuário no Auth (opcional)
+    // Hard delete - deletar definitivamente do supabase.auth
     try {
-      await supabaseClient.auth.admin.updateUserById(id, {
-        ban_duration: 'none', // Banir indefinidamente
-        user_metadata: {
-          deleted_at: new Date().toISOString()
-        }
-      })
-    } catch {
-      console.warn('Erro ao desativar usuário no Auth - detalhes omitidos por segurança')
+      const supabaseAdmin = createServiceRoleClient()
+      const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(id)
+      
+      if (authDeleteError) {
+        console.error('Erro ao deletar usuário do Auth:', authDeleteError)
+        
+        // Rollback: reverter o soft delete se falhou no Auth
+        await supabaseClient
+          .from('users')
+          .update({
+            deleted_at: null,
+            is_active: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id)
+        
+        return NextResponse.json(
+          { error: 'Erro ao deletar usuário do sistema de autenticação: ' + authDeleteError.message },
+          { status: 500 }
+        )
+      }
+    } catch (authError) {
+      console.error('Erro ao deletar usuário do Auth:', authError)
+      
+      // Rollback: reverter o soft delete se falhou no Auth
+      await supabaseClient
+        .from('users')
+        .update({
+          deleted_at: null,
+          is_active: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+      
+      return NextResponse.json(
+        { error: 'Erro ao deletar usuário do sistema de autenticação' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({

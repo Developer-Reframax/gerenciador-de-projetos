@@ -1,6 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase-server'
+import { createRouteHandlerClient, createServiceRoleClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
+import { User } from '@/types/user'
+
+// Função para enviar dados do usuário para webhook
+async function sendUserWebhook(user: User, temporaryPassword: string) {
+  try {
+    // Verificar se webhook está habilitado
+    const useWebhook = process.env.USE_WEBHOOK === 'true'
+    const webhookUrl = process.env.WEBHOOK_URL
+    const webhookSecret = process.env.WEBHOOK_SECRET
+
+    if (!useWebhook || !webhookUrl || !webhookSecret) {
+      console.log('Webhook não configurado ou desabilitado')
+      return
+    }
+
+    // Preparar payload no formato especificado
+    const webhookPayload = {
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          avatar_url: user.avatar_url || null,
+          bio: user.bio || null,
+          timezone: user.timezone || "America/Sao_Paulo",
+          language: user.language || "pt-BR",
+          theme: user.theme || "light",
+          notification_preferences: user.notification_preferences || {
+            comments: true,
+            project_updates: true,
+            task_assignments: true,
+            push_notifications: true,
+            email_notifications: true
+          },
+          is_active: user.is_active,
+          last_seen_at: user.last_seen_at,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+          deleted_at: user.deleted_at,
+          role: user.role
+        },
+        temporaryPassword: temporaryPassword,
+        emailType: "welcome",
+        timestamp: new Date().toISOString(),
+        secret: webhookSecret
+      
+    }
+
+    // Enviar para webhook
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(webhookPayload)
+    })
+
+    if (!response.ok) {
+      console.error('Erro ao enviar webhook:', response.status, response.statusText)
+    } else {
+      console.log('Webhook enviado com sucesso para:', webhookUrl)
+    }
+
+  } catch (error) {
+    console.error('Erro ao enviar webhook:', error)
+    // Não falhar o cadastro se webhook falhar
+  }
+}
 
 // GET - Listar usuários
 export async function GET() {
@@ -71,7 +138,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { email, full_name, role = 'user', bio, timezone = 'America/Sao_Paulo', language = 'pt-BR' } = body
+    const { email, full_name, role = 'user' } = body
 
     // Validações
     if (!email || !full_name) {
@@ -113,19 +180,22 @@ export async function POST(request: NextRequest) {
     // Gerar senha temporária
     const tempPassword = Math.random().toString(36).slice(-12) + 'A1!'
 
-    // Criar usuário no Auth
-    const { data: authUser, error: createAuthError } = await supabase.auth.admin.createUser({
+    // Criar cliente com Service Role para operações administrativas
+    const supabaseAdmin = createServiceRoleClient()
+
+    // Dados para criação do usuário no Auth
+    const userData = {
       email,
       password: tempPassword,
-      email_confirm: true,
+      display_name: full_name,
       user_metadata: {
         full_name,
-        role,
-        bio,
-        timezone,
-        language
+        role
       }
-    })
+    }
+
+    // Criar usuário no Auth
+    const { data: authUser, error: createAuthError } = await supabaseAdmin.auth.admin.createUser(userData)
 
     if (createAuthError || !authUser.user) {
       console.error('Erro ao criar usuário no Auth:', createAuthError)
@@ -135,42 +205,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Criar usuário na tabela users
-    const { data: newUser, error: createUserError } = await supabase
-      .from('users')
-      .insert({
-        id: authUser.user.id,
-        email,
-        full_name,
-        role,
-        bio: bio || null,
-        timezone,
-        language,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select()
-      .single()
+    // Aguardar trigger executar e buscar usuário criado
+    let newUser = null
+    let attempts = 0
+    const maxAttempts = 5
 
-    if (createUserError) {
-      console.error('Erro ao criar usuário na tabela:', createUserError)
+    while (!newUser && attempts < maxAttempts) {
+      attempts++
       
-      // Tentar remover o usuário do Auth se falhou na tabela
-      try {
-        await supabase.auth.admin.deleteUser(authUser.user.id)
-      } catch {
-        console.warn('Erro ao limpar usuário do Auth após falha')
+      // Aguardar um pouco para a trigger processar
+      await new Promise(resolve => setTimeout(resolve, attempts * 500))
+
+      // Buscar usuário criado pela trigger
+      const { data: foundUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.user.id)
+        .single()
+
+      if (foundUser) {
+        newUser = foundUser
+        break
       }
-      
-      return NextResponse.json(
-        { error: 'Erro ao criar usuário: ' + createUserError.message },
-        { status: 500 }
-      )
+
+      if (attempts === maxAttempts) {
+        console.warn('Trigger não executou após', maxAttempts, 'tentativas')
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: authUser.user.id,
+            email: authUser.user.email,
+            full_name: authUser.user.user_metadata?.full_name || full_name
+          },
+          message: 'Usuário criado no sistema de autenticação. A sincronização com a tabela pode levar alguns momentos.',
+          warning: 'Trigger ainda processando'
+        }, { status: 201 })
+      }
     }
 
-    // TODO: Enviar email com credenciais (implementar serviço de email)
-    console.log(`Usuário criado: ${email} - Senha temporária: ${tempPassword}`)
+    // Enviar dados para webhook se configurado
+    if (newUser) {
+      await sendUserWebhook(newUser, tempPassword)
+    }
 
     return NextResponse.json({
       success: true,

@@ -31,21 +31,25 @@ graph TD
 
 ## 2. Stack Tecnológico
 
-- **Frontend**: React@18 + TypeScript + Tailwind CSS + Lucide React
-- **Backend**: Next.js API Routes + Supabase
-- **Database**: Supabase (PostgreSQL)
-- **Estado**: React Query + useState para estado local
-- **Drag & Drop**: @dnd-kit/core
+* **Frontend**: React\@18 + TypeScript + Tailwind CSS + Lucide React
+
+* **Backend**: Next.js API Routes + Supabase
+
+* **Database**: Supabase (PostgreSQL)
+
+* **Estado**: React Query + useState para estado local
+
+* **Drag & Drop**: @dnd-kit/core
 
 ## 3. Definições de Rotas
 
-| Rota | Propósito |
-|------|----------|
-| /kanban-reformulado | Página principal do Kanban reformulado com seletores |
-| /api/kanban/pessoas | API para buscar pessoas com tarefas atribuídas |
-| /api/kanban/tarefas-por-pessoa | API para buscar tarefas agrupadas por pessoa |
-| /api/kanban/equipes | API para listar equipes disponíveis |
-| /api/kanban/mover-tarefa | API para alterar responsável de uma tarefa |
+| Rota                           | Propósito                                            |
+| ------------------------------ | ---------------------------------------------------- |
+| /kanban-reformulado            | Página principal do Kanban reformulado com seletores |
+| /api/kanban/pessoas            | API para buscar pessoas com tarefas atribuídas       |
+| /api/kanban/tarefas-por-pessoa | API para buscar tarefas agrupadas por pessoa         |
+| /api/kanban/equipes            | API para listar equipes disponíveis                  |
+| /api/kanban/mover-tarefa       | API para alterar responsável de uma tarefa           |
 
 ## 4. APIs Necessárias
 
@@ -54,12 +58,14 @@ graph TD
 **Endpoint**: `GET /api/kanban/pessoas`
 
 **Query Parameters**:
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|----------|
-| tipo_visao | string | true | "pessoa" ou "equipe" |
-| equipe_id | string | false | ID da equipe (obrigatório se tipo_visao = "equipe") |
+
+| Parâmetro   | Tipo   | Obrigatório | Descrição                                            |
+| ----------- | ------ | ----------- | ---------------------------------------------------- |
+| tipo\_visao | string | true        | "pessoa" ou "equipe"                                 |
+| equipe\_id  | string | false       | ID da equipe (obrigatório se tipo\_visao = "equipe") |
 
 **Response**:
+
 ```json
 {
   "pessoas": [
@@ -82,11 +88,13 @@ graph TD
 **Endpoint**: `GET /api/kanban/tarefas-por-pessoa`
 
 **Query Parameters**:
-| Parâmetro | Tipo | Obrigatório | Descrição |
-|-----------|------|-------------|----------|
-| pessoa_ids | string[] | true | Array de IDs das pessoas |
+
+| Parâmetro   | Tipo      | Obrigatório | Descrição                |
+| ----------- | --------- | ----------- | ------------------------ |
+| pessoa\_ids | string\[] | true        | Array de IDs das pessoas |
 
 **Response**:
+
 ```json
 {
   "tarefas_por_pessoa": {
@@ -111,6 +119,7 @@ graph TD
 **Endpoint**: `PUT /api/kanban/mover-tarefa`
 
 **Request Body**:
+
 ```json
 {
   "tarefa_id": "task-456",
@@ -142,33 +151,49 @@ graph TD
 ### 5.1 Componentes Principais
 
 **KanbanReformulado** (Página Principal)
-- Gerencia estado global da visualização
-- Coordena comunicação entre componentes
-- Implementa lógica de drag & drop
+
+* Gerencia estado global da visualização
+
+* Coordena comunicação entre componentes
+
+* Implementa lógica de drag & drop
 
 **KanbanControls** (Controles de Filtro)
-- Seletor de tipo de visualização (pessoa/equipe)
-- Dropdown de seleção de equipe
-- Filtros adicionais (status, prioridade)
+
+* Seletor de tipo de visualização (pessoa/equipe)
+
+* Dropdown de seleção de equipe
+
+* Filtros adicionais (status, prioridade)
 
 **KanbanBoard** (Tabuleiro Principal)
-- Renderiza colunas dinamicamente baseado em pessoas
-- Implementa área de drop para movimentação
-- Gerencia layout responsivo
+
+* Renderiza colunas dinamicamente baseado em pessoas
+
+* Implementa área de drop para movimentação
+
+* Gerencia layout responsivo
 
 **PersonColumn** (Coluna de Pessoa)
-- Header com informações da pessoa
-- Lista de tarefas ordenadas por status
-- Indicadores visuais de carga de trabalho
+
+* Header com informações da pessoa
+
+* Lista de tarefas ordenadas por status
+
+* Indicadores visuais de carga de trabalho
 
 **TaskCard** (Cartão de Tarefa)
-- Informações resumidas da tarefa
-- Indicadores de tipo (projeto/workflow)
-- Status visual e prazo
+
+* Informações resumidas da tarefa
+
+* Indicadores de tipo (projeto/workflow)
+
+* Status visual e prazo
 
 ## 6. Hooks Customizados
 
 ### 6.1 useKanbanData
+
 ```typescript
 interface UseKanbanDataProps {
   tipoVisao: 'pessoa' | 'equipe'
@@ -185,6 +210,7 @@ interface UseKanbanDataReturn {
 ```
 
 ### 6.2 useKanbanDragDrop
+
 ```typescript
 interface UseKanbanDragDropReturn {
   sensors: SensorDescriptor[]
@@ -247,6 +273,7 @@ erDiagram
 ### 7.2 Queries de Agregação
 
 **Buscar Pessoas com Tarefas (Visão Geral)**
+
 ```sql
 WITH pessoas_com_tarefas AS (
   SELECT DISTINCT u.id, u.full_name, u.email, u.avatar_url
@@ -261,6 +288,7 @@ SELECT * FROM pessoas_com_tarefas;
 ```
 
 **Buscar Tarefas Unificadas por Pessoa**
+
 ```sql
 WITH tarefas_unificadas AS (
   SELECT 
@@ -301,14 +329,21 @@ ORDER BY
 
 ## 8. Considerações de Performance
 
-- **Paginação**: Implementar lazy loading para equipes com muitos membros
-- **Cache**: Usar React Query para cache de dados de pessoas e tarefas
-- **Otimização de Queries**: Índices em assigned_to, status e created_at
-- **Debounce**: Aplicar debounce em filtros e buscas
-- **Virtualização**: Considerar virtualização para listas muito grandes
+* **Paginação**: Implementar lazy loading para equipes com muitos membros
+
+* **Cache**: Usar React Query para cache de dados de pessoas e tarefas
+
+* **Otimização de Queries**: Índices em assigned\_to, status e created\_at
+
+* **Debounce**: Aplicar debounce em filtros e buscas
+
+* **Virtualização**: Considerar virtualização para listas muito grandes
 
 ## 9. Segurança e Permissões
 
-- **RLS (Row Level Security)**: Políticas para garantir que usuários vejam apenas dados permitidos
-- **Validação de Equipe**: Verificar se usuário tem permissão para visualizar equipe selecionada
-- **Auditoria**: Log de movimentações de tarefas entre responsáveis
+* **RLS (Row Level Security)**: Políticas para garantir que usuários vejam apenas dados permitidos
+
+* **Validação de Equipe**: Verificar se usuário tem permissão para visualizar equipe selecionada
+
+* **Auditoria**: Log de movimentações de tarefas entre responsáveis
+
