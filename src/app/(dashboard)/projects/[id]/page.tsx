@@ -13,6 +13,7 @@ import { ProjectSchedule } from '@/components/projects/project-schedule'
 import { ProjectComments } from '@/components/comments/project-comments'
 import { ProjectAttachments } from '@/components/projects/project-attachments'
 import { ProjectLogsTab } from '@/components/projects/project-logs-tab'
+import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
 
 import { ProjectStrategicInfo } from '@/components/projects/project-strategic-info'
 import { DeviationList } from '@/components/projects/deviation-list'
@@ -253,6 +254,9 @@ export default function ProjectDetailsPage() {
           <ProjectLogsTab projectId={projectId} />
         </TabsContent>
       </Tabs>
+
+      {/* Botão Scroll to Top */}
+      <ScrollToTopButton />
     </div>
   )
 }

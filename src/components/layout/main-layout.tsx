@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollToTop } from "@/components/ui/scroll-to-top"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { 
   Menu,
@@ -24,9 +25,11 @@ import {
   ChevronRight,
   AlertTriangle,
   AlertCircle,
-  GitBranch
+  GitBranch,
+  Bell
 } from "lucide-react"
-import { NotificationBadge, NotificationCenter } from "@/components/notifications"
+import { NotificationBadge } from "@/components/notifications/NotificationBadge"
+import { NotificationCenter } from "@/components/notifications/NotificationCenter"
 import { useNotifications } from "@/hooks/useNotifications"
 
 interface MainLayoutProps {
@@ -291,6 +294,9 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   )
 }

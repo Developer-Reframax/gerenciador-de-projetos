@@ -66,6 +66,17 @@ export default function ProjectsPage() {
     refetchStats()
   }
 
+  const handleDeleteProject = (_projectId: string) => {
+    // Remove o projeto da lista local para atualização imediata
+    // O refetch será chamado pelo onRefetch
+  }
+
+  const handleRefetchProjects = () => {
+    // Recarrega os projetos e estatísticas após exclusão
+    refetchProjects()
+    refetchStats()
+  }
+
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -266,6 +277,8 @@ export default function ProjectsPage() {
               key={project.id}
               project={project}
               onEdit={handleEditProject}
+              onDelete={handleDeleteProject}
+              onRefetch={handleRefetchProjects}
             />
           ))}
         </div>

@@ -245,7 +245,6 @@ export interface CreateTagForm {
 
 export interface UpdateProjectStrategicForm {
   strategic_objective_id?: string | null
-  strategic_objective_text?: string | null
   strategic_pillar_id?: string | null
   request_date?: string | null
   committee_approval_date?: string | null
@@ -305,7 +304,6 @@ export interface ProjectStrategicInfoResponse {
   id: string
   name: string
   strategic_objective_id?: string | null
-  strategic_objective_text?: string | null
   strategic_pillar_id?: string | null
   request_date?: string | null
   committee_approval_date?: string | null

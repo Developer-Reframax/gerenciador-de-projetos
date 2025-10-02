@@ -36,7 +36,6 @@ export async function GET(
         name,
         strategic_objective_id,
         strategic_pillar_id,
-        strategic_objective_text,
         request_date,
         committee_approval_date,
         real_start_date,
@@ -166,7 +165,6 @@ export async function GET(
         name: project.name,
         project_id: project.id,
         strategic_objective_id: project.strategic_objective_id,
-        strategic_objective_text: project.strategic_objective_text,
         strategic_pillar_id: project.strategic_pillar_id,
         request_date: project.request_date,
         committee_approval_date: project.committee_approval_date,
@@ -223,7 +221,6 @@ export async function PUT(
     const projectId = id
     const {
       strategic_objective_id,
-      strategic_objective_text,
       strategic_pillar_id,
       request_date,
       committee_approval_date,
@@ -326,7 +323,6 @@ export async function PUT(
       .from('projects')
       .update({
         strategic_objective_id: strategic_objective_id || null,
-        strategic_objective_text: strategic_objective_text || null,
         strategic_pillar_id: strategic_pillar_id || null,
         request_date: request_date || null,
         committee_approval_date: committee_approval_date || null,

@@ -15,6 +15,7 @@ import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
 import type {
   StrategicPillar,
+  StrategicObjective,
   Tag as TagType,
   Area,
   Stakeholder,
@@ -34,6 +35,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
   const [saving, setSaving] = useState(false)
   const [projectData, setProjectData] = useState<ProjectStrategicInfoResponse | null>(null)
 
+  const [objectives, setObjectives] = useState<StrategicObjective[]>([])
   const [pillars, setPillars] = useState<StrategicPillar[]>([])
   const [tags, setTags] = useState<TagType[]>([])
   const [areas, setAreas] = useState<Area[]>([])
@@ -64,8 +66,9 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
     setLoading(true)
     try {
       // Carregar informações estratégicas do projeto
-      const [projectRes, pillarsRes, tagsRes, areasRes] = await Promise.all([
+      const [projectRes, objectivesRes, pillarsRes, tagsRes, areasRes] = await Promise.all([
         fetch(`/api/projects/${projectId}/strategic`),
+        fetch('/api/strategic-objectives'),
         fetch('/api/strategic-pillars'),
         fetch('/api/tags'),
         fetch('/api/areas')
@@ -93,7 +96,6 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
         setLessonsLearned(projectData?.lessons_learned || '')
         setFormData({
           strategic_objective_id: projectData?.strategic_objective_id,
-          strategic_objective_text: projectData?.strategic_objective_text,
           strategic_pillar_id: projectData?.strategic_pillar_id,
           request_date: projectData?.request_date,
           committee_approval_date: projectData?.committee_approval_date,
@@ -114,7 +116,10 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
         })
       }
 
-
+      if (objectivesRes.ok) {
+        const objectivesData = await objectivesRes.json()
+        setObjectives(objectivesData.data)
+      }
 
       if (pillarsRes.ok) {
         const pillarsData = await pillarsRes.json()
@@ -193,7 +198,6 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
     if (projectData) {
       setFormData({
         strategic_objective_id: projectData.strategic_objective_id,
-        strategic_objective_text: projectData.strategic_objective_text,
         strategic_pillar_id: projectData.strategic_pillar_id,
         request_date: projectData.request_date,
         committee_approval_date: projectData.committee_approval_date,
@@ -238,7 +242,7 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
       if (response.ok) {
         const result = await response.json()
         const newObj = result.data
-
+        setObjectives(prev => [...prev, newObj])
         setFormData(prev => ({ ...prev, strategic_objective_id: newObj.id }))
         setNewObjective({ name: '', description: '' })
         setIsCreateObjectiveOpen(false)
@@ -391,16 +395,35 @@ export function ProjectStrategicInfo({ projectId }: ProjectStrategicInfoProps) {
                   Objetivo Estratégico *
                 </Label>
                 {isEditing ? (
-                  <Textarea
-                    placeholder="Descreva o objetivo estratégico do projeto..."
-                    value={formData.strategic_objective_text || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, strategic_objective_text: e.target.value }))}
-                    className="min-h-[100px]"
-                    required
-                  />
+                  <Select
+                    value={formData.strategic_objective_id || 'none'}
+                    onValueChange={(value) => {
+                      if (value === 'create-new') {
+                        setIsCreateObjectiveOpen(true)
+                      } else {
+                        setFormData(prev => ({ ...prev, strategic_objective_id: value === 'none' ? null : value }))
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione um objetivo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {objectives.map(objective => (
+                        <SelectItem key={objective.id} value={objective.id}>
+                          {objective.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="create-new" className="text-blue-600 font-medium">
+                        <Plus className="h-4 w-4 mr-2" />
+                        + Criar Novo Objetivo
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 ) : (
-                  <div className="text-sm p-4 bg-muted/30 rounded-lg min-h-[100px] border">
-                    {projectData?.strategic_objective_text || 'Não definido'}
+                  <div className="text-sm p-3 bg-muted/30 rounded-lg border">
+                    {projectData?.strategic_objective?.name || 'Não definido'}
                   </div>
                 )}
               </div>
